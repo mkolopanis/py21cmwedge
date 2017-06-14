@@ -14,7 +14,7 @@ setup_args = {
     'packages': ['py21cmwedge'],
     'version': '__version__',
     'package_data': {'py21cmwedge': [f for f in listdir('./py21cmwedge/data') if op.isfile(op.join('./py21cmwedge/data', f))]},
-    'install_requires': ['numpy', 'scipy', 'astropy>1.2', 'nose']
+    'install_requires': ['numpy>1.10', 'scipy', 'astropy>1.2', 'nose']
 }
 
 if __name__ == '__main__':
