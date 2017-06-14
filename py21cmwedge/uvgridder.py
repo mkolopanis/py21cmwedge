@@ -42,7 +42,8 @@ class UVGridder(object):
     def set_uvw(self, uvw):
         """Manually set uvw array from outside source.
 
-        Should be in the form 3 x N_uvws"""
+        Should be in the form 3 x N_uvws
+        """
         if np.shape(uvw[0]) != 3 and np.shape(uvw)[1] == 3:
             uvw = np.transpose(uvw, [1, 0])
         self.uvws = uvw
