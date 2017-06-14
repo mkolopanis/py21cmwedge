@@ -1,7 +1,7 @@
 """Primary UV Gridder."""
 import numpy as np
 import os
-from astropy.constants as const
+from astropy import constants as const
 
 
 class UVGridder(object):
@@ -14,7 +14,7 @@ class UVGridder(object):
         self.uv_bins = None
         self.bl_len_max = 0
         self.bl_len_min = np.Inf
-        self.beam
+        self.beam = None
         self.uvws = None
         self.antpos = None
 
@@ -27,7 +27,7 @@ class UVGridder(object):
         skiprows = number of row numbers to skip before data
         delimiter = string of delimiter used to parse file (e.g. ',')
         """
-        self.antpos = np.loadtxt(filename, **kwargs, unpack=True)
+        self.antpos = np.loadtxt(filename, unpack=True, **kwargs)
         self.uvws = self._creatuv(self.antpos)
 
     def __createuv(self):
