@@ -9,8 +9,10 @@ testdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 
 
 class UVTest(UVGridder):
+    """UVGridder test object."""
+
     def __init__(self):
-        """UVGridder test object."""
+        """Create test object."""
         # comment
         self.path = testdir
         super(UVTest, self).__init__()
