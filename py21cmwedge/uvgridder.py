@@ -39,6 +39,14 @@ class UVGridder(object):
         self.antpos = antpos
         self.uvws = self.__createuv__()
 
+    def set_uvw(self, uvw):
+        """Manually set uvw array from outside source.
+
+        Should be in the form 3 x N_uvws"""
+        if np.shape(uvw[0]) != 3 and np.shape(uvw)[1] == 3:
+            uvw = np.transpose(uvw, [1, 0])
+        self.uvws = uvw
+
     def __createuv__(self):
         """Create Matrix of UVs from antenna positions."""
         u_rows1 = np.tile(self.antpos[0], (self.antpos.shape[1], 1))
