@@ -1,7 +1,7 @@
 """Test for Gridder Object."""
 import nose.tools as nt
 import os
-from py21cm_wedge import UVGridder
+from py21cmwedge import UVGridder
 
 testdir = os.path.dirname(os.path.realpath(__file__))
 
