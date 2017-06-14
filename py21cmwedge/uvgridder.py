@@ -19,7 +19,7 @@ class UVGridder(object):
         self.antpos = None
 
     def read_antpos(self, filename, **kwargs):
-        """Read antenna position file.
+        """Read antenna position file and set positions to object.
 
         Provides functionality wrapper around numpy.loadtxt
         Please provide keywords:
@@ -27,18 +27,32 @@ class UVGridder(object):
         skiprows = number of row numbers to skip before data
         delimiter = string of delimiter used to parse file (e.g. ',')
         """
-        self.antpos = np.loadtxt(filename, unpack=True, **kwargs)
-        self.uvws = self._creatuv(self.antpos)
+        antpos = np.loadtxt(filename, unpack=True, **kwargs)
+        self.set_antpos(antpos)
 
-    def __createuv(self):
-        """Create Matrix of UVs from antenna position file."""
+    def set_antpos(self, antpos):
+        """Manually set antenna positions.
+
+        Antpos must be of the shape 3 x N_ants
+        have the form East, North, Up
+        """
+        self.antpos = antpos
+        self.uvws = self.__createuv__()
+
+    def __createuv__(self):
+        """Create Matrix of UVs from antenna positions."""
         u_rows1 = np.tile(self.antpos[0], (self.antpos.shape[1], 1))
         u_rows2 = np.tile(self.antpos[0], (self.antpos.shape[1], 1)).T
         v_rows1 = np.tile(self.antpos[1], (self.antpos.shape[1], 1))
-        v_rows1 = np.tile(self.antpos[1], (self.antpos.shape[1], 1))
-        w_rows2 = np.tile(self.antpos[2], (self.antpos.shape[1], 1))
+        v_rows2 = np.tile(self.antpos[1], (self.antpos.shape[1], 1)).T
+        w_rows1 = np.tile(self.antpos[2], (self.antpos.shape[1], 1))
         w_rows2 = np.tile(self.antpos[2], (self.antpos.shape[1], 1)).T
 
         u = u_rows1 - u_rows2
         v = v_rows1 - v_rows2
         w = w_rows1 - w_rows2
+        norms = np.linalg.norm([u.ravel(), v.ravel(), w.ravel()], axis=0)
+        self.bl_len_max = np.max(norms)
+        self.bl_len_min = np.min(norms[norms > 0])
+
+        return np.array([u.ravel(), v.ravel(), w.ravel()])
