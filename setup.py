@@ -8,7 +8,7 @@ __version__ = '0.0.1'
 setup_args = {
     'name': 'py21cmwedge',
     'author': 'Matthew Kolopanis',
-    'licsense': 'BSD',
+    'license': 'BSD',
     'description': 'an utility to predict the theoretical wedge leakage from a radio intereferometric array',
     'package_dir': {'py21cmwedge': 'py21cmwedge'},
     'packages': ['py21cmwedge'],
