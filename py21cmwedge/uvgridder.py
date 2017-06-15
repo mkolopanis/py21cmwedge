@@ -16,12 +16,13 @@ class UVGridder(object):
         self.bl_len_max = 0
         self.bl_len_min = np.Inf
         self.beam = None
-        self.uvws = None
+        self.uvw_array = None
         self.antpos = None
         self.uv_grid = None
         self.grid_size = None
         self.grid_delta = None
-        self.fwhm = None
+        self.fwhm = 1.0
+        self.sigma_beam = self.fwhm / np.sqrt(4. * np.log(2.))
 
     def read_antpos(self, filename, **kwargs):
         """Read antenna position file and set positions to object.
@@ -42,21 +43,34 @@ class UVGridder(object):
         have the form East, North, Altitude
         """
         self.antpos = antpos
-        self.uvws = self.__createuv__()
+        self.uvw_array = self.__createuv__()
 
-    def set_uvw(self, uvw):
+    def set_uvw_array(self, uvw):
         """Manually set uvw array from outside source.
 
         Should be in the form 3 x N_uvws
         """
         if np.shape(uvw[0]) != 3 and np.shape(uvw)[1] == 3:
             uvw = np.transpose(uvw, [1, 0])
-        self.uvws = uvw
+        self.uvw_array = uvw
 
     def set_freqs(self, freq):
         """Set Frequency or Array of Frequencies."""
-        self.freqs = np.array([freq])
+        if type(freq) not in [list, np.ndarray, set]:
+            freq = np.array([freq])
+        else:
+            freq = np.asarray(list(freq))
+        self.freqs = freq
         self.wavelength = const.c.to('m/s').value / self.freqs
+
+    def set_fwhm(self, fwhm):
+        """Set the FWHM of a Gaussian Beam."""
+        self.fwhm = fwhm
+        self.sigma_beam = self.fwhm / np.sqrt(4. * np.log(2))
+
+    def set_sigma_beam(self, sigma):
+        """Manually Set Gaussian standard deviation for Beam."""
+        self.sigma_beam = sigma
 
     def set_beam(self, beam):
         """Set beam from outside source."""
@@ -86,7 +100,7 @@ class UVGridder(object):
         Assumes W term is zero or very very small.
         Elemetns of dictionary are lists of bls keyed by uv lengths
         """
-        for _u, _v in self.uvws[:2].T:
+        for _u, _v in self.uvw_array[:2].T:
             if np.linalg.norm([_u, _v]) == 0:
                 continue
             uv = '{0:.3f},{1:.3f}'.format(_u, _v)
@@ -100,37 +114,52 @@ class UVGridder(object):
         cen = self.grid_size/2 + 0.5  # correction for centering
         xcen += cen
         ycen = -1 * ycen + cen
-        beam = np.zeros((self.grid_size, self.grid_size))
+        beam = np.zeros((self.freqs.size, self.grid_size, self.grid_size))
         inds = np.logical_and(np.round(ycen) <= self.grid_size - 1,
                               np.round(xcen) <= self.grid_size - 1)
         ycen = map(int, np.round(ycen[inds]))
         xcen = map(int, np.round(xcen[inds]))
-        beam[ycen, xcen] += 1.  # single pixel gridder
-        beam = filters.gaussian_filter(beam, self.fwhm)
+        for _fq, _y, _x in zip(xrange(self.freqs), ycen, xcen):
+            beam[_fq, _y, _x] += 1.  # single pixel gridder
+        # this current implementation does have some limitations
+        # if the number of frequencies happens to equal the grid size
+        # this will error
+        filters.gaussian_filter(beam, self.sigma_beam, output=beam)
         return beam
 
-    def sum_uv(self):
+    def sum_uv(self, uv_key):
         """Convert uvbin dictionary to a UV-plane."""
-        self.uv_grid = np.zeros((self.grid_size, self.grid_size))
-        for uv_key in self.uvbins.keys():
-            uvbin = self.uvbins[uv_key]
-            nbls = len(uvbin)
-            u, v = np.array(map(float, uv_key.split(',')))
-            u /= self.wavelength
-            v /= self.wavelength
-            if u == 0 and v == 0:
-                print uv_key
+        uvbin = self.uvbins[uv_key]
+        nbls = len(uvbin)
+        u, v = np.array(map(float, uv_key.split(',')))
+        u /= self.wavelength
+        v /= self.wavelength
+        _beam = self.beamgridder(xcen=u / self.grid_delta,
+                                 ycen=v / self.grid_delta)
+        self.uv_grid += nbls * _beam
 
-            _beam = self.beamgridder(xcen=u/self.grid_delta,
-                                     ycen=v/self.grid_delta)
-            self.uv_grid += nbls * _beam
-
-    def get_uvcoverage(self):
+    def grid_uvw(self):
         """Create UV coverage from object data."""
-        self.grid_delta = np.amin(np.concatenate([self.wavelength/4.,
-                                                  [self.bl_len_min/2.]]))
+        self.grid_delta = np.amin(np.concatenate([self.wavelength / 4.,
+                                                  [self.bl_len_min / 2.]]))
         self.grid_size = int(np.round(self.bl_len_max
                                       / self.wavelength
                                       / self.grid_delta).max()) * 4 + 1
+        self.uv_grid = np.zeros(
+            (self.freqs.size, self.grid_size, self.grid_size))
+        for uv_key in self.uvbins.keys():
+            self.sum_uv(uv_key)
+
+    def calc_all(self, refresh_all=True):
+        """Calculate all necessary info.
+
+        Perform All calculations:
+        Convert uvw_array to dict (uvw_to_dict())
+        Grid uvw to plane (grid_uvw())
+        refresh_all : boolean, if true, recalculate the uvbins
+        """
+        if refresh_all:
+            self.uvbins = {}
+            self.uv_grid = None
         self.uvw_to_dict()
-        self.sum_uv()
+        self.grid_uvw()
