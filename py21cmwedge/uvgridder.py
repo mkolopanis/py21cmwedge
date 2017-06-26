@@ -120,11 +120,10 @@ class UVGridder(object):
         ycen = map(int, np.round(ycen[inds]))
         xcen = map(int, np.round(xcen[inds]))
         for _fq, _y, _x in zip(xrange(self.freqs), ycen, xcen):
-            beam[_fq, _y, _x] += 1.  # single pixel gridder
-        # this current implementation does have some limitations
-        # if the number of frequencies happens to equal the grid size
-        # this will error
-        filters.gaussian_filter(beam, self.sigma_beam, output=beam)
+            # add delta function at uv location
+            beam[_fq, _y, _x] += 1.
+            filters.gaussian_filter(beam[_fq], self.sigma_beam,
+                                    output=beam[_fq])
         return beam
 
     def sum_uv(self, uv_key):
