@@ -109,6 +109,27 @@ class UVGridder(object):
             else:
                 self.uvbins[uv] = [uv]
 
+    def uv_weights(self, u, v):
+        """Compute weights for arbitrary baseline on a gridded UV plane.
+
+        uv must be in units of pixels."""
+        # weights = 1. - np.abs(uv - grid)/np.diff(grid)[0]
+        #     weights = 1. - (np.abs(uv - grid)/np.diff(grid)[0])**2
+        #     weights = np.exp( - (uv - grid)**2/(2*np.diff(grid)[0]**2))
+        #     weights = np.exp( - abs(uv - grid)/(np.diff(grid)[0]))
+        _range = np.arange(self.grid_size)
+        y, x = np.meshgrid(_range, _range)
+        #     correct so pixels are zero at the center
+        # cen = (self.grid_size + 1) / 2
+        # x -= cen
+        # y -= cen
+        x = u - x
+        y = v - y
+        weights = (1 -
+                   np.linalg.norm([x, y], axis=0))
+        weights = np.ma.masked_less_equal(weights, 1e-1).filled(0)
+        return weights
+
     def beamgridder(self, xcen, ycen):
         """Grid Gaussian Beam."""
         cen = self.grid_size/2 + 0.5  # correction for centering
@@ -117,11 +138,11 @@ class UVGridder(object):
         beam = np.zeros((self.freqs.size, self.grid_size, self.grid_size))
         inds = np.logical_and(np.round(ycen) <= self.grid_size - 1,
                               np.round(xcen) <= self.grid_size - 1)
-        ycen = map(int, np.round(ycen[inds]))
-        xcen = map(int, np.round(xcen[inds]))
+        # ycen = map(int, np.round(ycen[inds]))
+        # xcen = map(int, np.round(xcen[inds]))
         for _fq, _y, _x in zip(xrange(self.freqs.size), ycen, xcen):
             # add delta function at uv location
-            beam[_fq, _y, _x] += 1.
+            beam[_fq] += self.uv_weights(xcen[_fq], ycen[_fq])
             filters.gaussian_filter(beam[_fq], self.sigma_beam,
                                     output=beam[_fq])
         return beam
