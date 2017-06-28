@@ -112,7 +112,8 @@ class UVGridder(object):
     def uv_weights(self, u, v):
         """Compute weights for arbitrary baseline on a gridded UV plane.
 
-        uv must be in units of pixels."""
+        uv must be in units of pixels.
+        """
         # weights = 1. - np.abs(uv - grid)/np.diff(grid)[0]
         #     weights = 1. - (np.abs(uv - grid)/np.diff(grid)[0])**2
         #     weights = np.exp( - (uv - grid)**2/(2*np.diff(grid)[0]**2))
