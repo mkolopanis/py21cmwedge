@@ -3,7 +3,7 @@ import numpy as np
 import os
 from astropy import constants as const
 from scipy.ndimage import filters
-
+from py21cmwedge import cosmo
 
 class UVGridder(object):
     """Base uvgridder object."""
@@ -18,7 +18,7 @@ class UVGridder(object):
         self.beam = None
         self.uvw_array = None
         self.antpos = None
-        self.uv_grid = None
+        self.uvf_cube = None
         self.grid_size = None
         self.grid_delta = None
         self.fwhm = 1.0
@@ -119,7 +119,7 @@ class UVGridder(object):
                               np.round(xcen) <= self.grid_size - 1)
         ycen = map(int, np.round(ycen[inds]))
         xcen = map(int, np.round(xcen[inds]))
-        for _fq, _y, _x in zip(xrange(self.freqs), ycen, xcen):
+        for _fq, _y, _x in zip(xrange(self.freqs.size), ycen, xcen):
             # add delta function at uv location
             beam[_fq, _y, _x] += 1.
             filters.gaussian_filter(beam[_fq], self.sigma_beam,
@@ -135,16 +135,15 @@ class UVGridder(object):
         v /= self.wavelength
         _beam = self.beamgridder(xcen=u / self.grid_delta,
                                  ycen=v / self.grid_delta)
-        self.uv_grid += nbls * _beam
+        self.uvf_cube += nbls * _beam
 
     def grid_uvw(self):
         """Create UV coverage from object data."""
-        self.grid_delta = np.amin(np.concatenate([self.wavelength / 4.,
-                                                  [self.bl_len_min / 2.]]))
+        self.grid_delta = 1. / 4.  # in wavelengths
         self.grid_size = int(np.round(self.bl_len_max
                                       / self.wavelength
-                                      / self.grid_delta).max()) * 4 + 1
-        self.uv_grid = np.zeros(
+                                      / self.grid_delta).max()) * 2 + 1
+        self.uvf_cube = np.zeros(
             (self.freqs.size, self.grid_size, self.grid_size))
         for uv_key in self.uvbins.keys():
             self.sum_uv(uv_key)
@@ -159,6 +158,6 @@ class UVGridder(object):
         """
         if refresh_all:
             self.uvbins = {}
-            self.uv_grid = None
+            self.uvf_cube = None
         self.uvw_to_dict()
         self.grid_uvw()
