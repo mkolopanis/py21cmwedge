@@ -10,7 +10,7 @@ def E_inv(redshift=None, omega_matter=None,
                         + omega_curv * (1. + redshift)**2 + omega_lambda)
 
 
-def comoving_distance(redshift=None, hubble_param=.71, omega_matter=.27,
+def comoving_distance(redshift=None, hubble_param=1, omega_matter=.27,
                       omega_lambda=.73, omega_curv=0.0):
         """Calculate comoving distance for a Lambda_CDM cosmology."""
         hubble_dist = 3e3 / hubble_param
