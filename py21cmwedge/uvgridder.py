@@ -3,6 +3,7 @@ import numpy as np
 import os
 from astropy import constants as const
 from scipy.ndimage import filters
+from scipy.signal import fftconvolve
 from py21cmwedge import cosmo
 
 class UVGridder(object):
@@ -71,6 +72,7 @@ class UVGridder(object):
     def set_sigma_beam(self, sigma):
         """Manually Set Gaussian standard deviation for Beam."""
         self.sigma_beam = sigma
+        self.fwhm = self.sigma_beam * np.sqrt(4 * np.log(2))
 
     def set_beam(self, beam):
         """Set beam from outside source."""
@@ -120,16 +122,24 @@ class UVGridder(object):
         #     weights = np.exp( - abs(uv - grid)/(np.diff(grid)[0]))
         _range = np.arange(self.grid_size)
         y, x = np.meshgrid(_range, _range)
-        #     correct so pixels are zero at the center
-        # cen = (self.grid_size + 1) / 2
-        # x -= cen
-        # y -= cen
         x = u - x
         y = v - y
-        weights = (1 -
+        weights = (1. -
                    np.linalg.norm([x, y], axis=0))
-        weights = np.ma.masked_less_equal(weights, 1e-1).filled(0)
+        weights = np.ma.masked_less_equal(weights, 1e-4).filled(0)
         return weights
+
+    def gauss(self):
+        """Return simple 2-d Gaussian."""
+        _range = np.arange(self.grid_size)
+        y, x = np.meshgrid(_range, _range)
+        cen = self.grid_size/2 + 0.5  # correction for centering
+        y = -1 * y + cen
+        x = x - cen
+        dist = np.linalg.norm([x, y], axis=0)
+        g = np.exp(- dist**2/(2.*self.sigma_beam**2))
+        g /= g.max()
+        return g
 
     def beamgridder(self, xcen, ycen):
         """Grid Gaussian Beam."""
@@ -143,9 +153,9 @@ class UVGridder(object):
         # xcen = map(int, np.round(xcen[inds]))
         for _fq, _y, _x in zip(xrange(self.freqs.size), ycen, xcen):
             # add delta function at uv location
-            beam[_fq] += self.uv_weights(xcen[_fq], ycen[_fq])
-            filters.gaussian_filter(beam[_fq], self.sigma_beam,
-                                    output=beam[_fq])
+            beam[_fq] += self.uv_weights(ycen[_fq], xcen[_fq])
+            # filters.gaussian_filter(beam[_fq], self.sigma_beam,
+                                    # output=beam[_fq])
         return beam
 
     def sum_uv(self, uv_key):
@@ -169,6 +179,9 @@ class UVGridder(object):
             (self.freqs.size, self.grid_size, self.grid_size))
         for uv_key in self.uvbins.keys():
             self.sum_uv(uv_key)
+        for _fq in xrange(self.freqs.size):
+            self.uvf_cube[_fq] = fftconvolve(self.uvf_cube[_fq],
+                                             self.gauss(), mode='same')
 
     def calc_all(self, refresh_all=True):
         """Calculate all necessary info.
