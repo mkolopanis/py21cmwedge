@@ -136,3 +136,14 @@ def test_zero_uvbin():
     test_obj.set_uvw_array(test_uvw)
     test_obj.uvw_to_dict()
     nt.assert_equal(test_obj.uvbins, test_uvbin)
+
+
+def test_gauss_sum():
+    """Test Gaussian peak is unity."""
+    test_obj = UVTest()
+    test_fwhm = 3
+    test_sigma = test_fwhm / np.sqrt(4. * np.log(2))
+    test_obj.set_sigma_beam(test_sigma)
+    test_obj.grid_size = 101
+    g = test_obj.gauss()
+    nt.assert_equal(g.max(), 1)
