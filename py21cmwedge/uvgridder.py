@@ -143,7 +143,7 @@ class UVGridder(object):
 
     def beamgridder(self, xcen, ycen):
         """Grid Gaussian Beam."""
-        cen = self.grid_size/2 + 0.5  # correction for centering
+        cen = self.grid_size / 2 + 0.5  # correction for centering
         xcen += cen
         ycen = -1 * ycen + cen
         beam = np.zeros((self.freqs.size, self.grid_size, self.grid_size))
