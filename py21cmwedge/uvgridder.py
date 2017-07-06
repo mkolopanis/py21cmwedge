@@ -6,6 +6,7 @@ from scipy.ndimage import filters
 from scipy.signal import fftconvolve
 from py21cmwedge import cosmo
 
+
 class UVGridder(object):
     """Base uvgridder object."""
 
@@ -21,9 +22,13 @@ class UVGridder(object):
         self.antpos = None
         self.uvf_cube = None
         self.grid_size = None
-        self.grid_delta = None
+        self.grid_delta = 1  # default 1 wavelength pixels
         self.fwhm = 1.0
         self.sigma_beam = self.fwhm / np.sqrt(4. * np.log(2.))
+
+    def set_grid_delta(self, delta):
+        """Set grid sampling size."""
+        self.grid_delta = delta
 
     def read_antpos(self, filename, **kwargs):
         """Read antenna position file and set positions to object.
@@ -171,7 +176,6 @@ class UVGridder(object):
 
     def grid_uvw(self):
         """Create UV coverage from object data."""
-        self.grid_delta = 1. / 4.  # in wavelengths
         self.grid_size = int(np.round(self.bl_len_max
                                       / self.wavelength
                                       / self.grid_delta).max()) * 2 + 1
