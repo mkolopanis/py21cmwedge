@@ -178,7 +178,7 @@ class UVGridder(object):
         """Create UV coverage from object data."""
         self.grid_size = int(np.round(self.bl_len_max
                                       / self.wavelength
-                                      / self.grid_delta).max()) * 2 + 1
+                                      / self.grid_delta).max() * 1.1) * 2 + 1
         self.uvf_cube = np.zeros(
             (self.freqs.size, self.grid_size, self.grid_size))
         for uv_key in self.uvbins.keys():
