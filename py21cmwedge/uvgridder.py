@@ -125,12 +125,13 @@ class UVGridder(object):
         #     weights = 1. - (np.abs(uv - grid)/np.diff(grid)[0])**2
         #     weights = np.exp( - (uv - grid)**2/(2*np.diff(grid)[0]**2))
         #     weights = np.exp( - abs(uv - grid)/(np.diff(grid)[0]))
-        _range = np.arange(self.grid_size)
-        y, x = np.meshgrid(_range, _range)
+        _range = (np.arange(self.grid_size) - self.grid_size/2.)
+        _range *= self.grid_delta
+        x, y = np.meshgrid(_range, _range)
         x = u - x
         y = v - y
         weights = (1. -
-                   np.linalg.norm([x, y], axis=0))
+                   np.linalg.norm([x, y], axis=0)/self.grid_delta)
         weights = np.ma.masked_less_equal(weights, 1e-4).filled(0)
         return weights
 
@@ -146,19 +147,14 @@ class UVGridder(object):
         g /= g.max()
         return g
 
-    def beamgridder(self, xcen, ycen):
+    def beamgridder(self, u, v):
         """Grid Gaussian Beam."""
-        cen = self.grid_size / 2 + 0.5  # correction for centering
-        xcen += cen
-        ycen = -1 * ycen + cen
         beam = np.zeros((self.freqs.size, self.grid_size, self.grid_size))
-        inds = np.logical_and(np.round(ycen) <= self.grid_size - 1,
-                              np.round(xcen) <= self.grid_size - 1)
-        # ycen = map(int, np.round(ycen[inds]))
-        # xcen = map(int, np.round(xcen[inds]))
-        for _fq, _y, _x in zip(xrange(self.freqs.size), ycen, xcen):
-            # add delta function at uv location
-            beam[_fq] += self.uv_weights(ycen[_fq], xcen[_fq])
+        inds = np.logical_and(v <= self.grid_size - 1,
+                              u <= self.grid_size - 1)
+        for _fq in xrange(self.freqs.size):
+            # Create interpolation weights based on grid size and sampling
+            beam[_fq] += self.uv_weights(u[_fq], v[_fq])
             # filters.gaussian_filter(beam[_fq], self.sigma_beam,
                                     # output=beam[_fq])
         return beam
@@ -170,8 +166,7 @@ class UVGridder(object):
         u, v = np.array(map(float, uv_key.split(',')))
         u /= self.wavelength
         v /= self.wavelength
-        _beam = self.beamgridder(xcen=u / self.grid_delta,
-                                 ycen=v / self.grid_delta)
+        _beam = self.beamgridder(u=u, v=v)
         self.uvf_cube += nbls * _beam
 
     def grid_uvw(self):
