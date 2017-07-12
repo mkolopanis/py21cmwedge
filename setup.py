@@ -4,7 +4,7 @@ import glob
 import os.path as op
 from os import listdir
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 data_files = [f for f in listdir('./py21cmwedge/data')
               if op.isfile(op.join('./py21cmwedge/data', f))]
@@ -24,7 +24,8 @@ setup_args = {
     'packages': ['py21cmwedge'],
     'version': __version__,
     'package_data': {'py21cmwedge': all_files},
-    'install_requires': ['numpy>1.10', 'scipy', 'astropy>1.2', 'nose'],
+    'install_requires': ['numpy>1.10', 'scipy', 'astropy>1.2', 'nose',
+                         'healpy'],
     'test_suite': 'nose'
 }
 
