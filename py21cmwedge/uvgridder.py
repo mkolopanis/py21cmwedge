@@ -156,7 +156,7 @@ class UVGridder(object):
             # Create interpolation weights based on grid size and sampling
             beam[_fq] += self.uv_weights(u[_fq], v[_fq])
             # filters.gaussian_filter(beam[_fq], self.sigma_beam,
-                                    # output=beam[_fq])
+            #                   output=beam[_fq])
         return beam
 
     def sum_uv(self, uv_key):
