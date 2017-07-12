@@ -12,7 +12,7 @@ def hpx_to_uv(map_in, uv_delta):
     # Get info of the input map
     nside = hp.get_nside(map_in)
     pix_size = 1./hp.nside2resol(nside)  # 1./pix_resol to get wavelengths
-    uv_size = pix_size / 2.  # Only create a grid as large as the pixel size/2
+    uv_size = pix_size   # Only create a grid as large as the +/- pixel_size/2
 
     # Create a the _u,_v grid and baselines vectors
     _range = np.arange(uv_size).astype(np.float64)
