@@ -4,7 +4,9 @@ import os
 from astropy import constants as const
 from scipy.ndimage import filters
 from scipy.signal import fftconvolve
-from py21cmwedge import cosmo
+from py21cmwedge import cosmo, dft
+import healpy as hp
+
 
 
 class UVGridder(object):
@@ -21,14 +23,16 @@ class UVGridder(object):
         self.uvw_array = None
         self.antpos = None
         self.uvf_cube = None
-        self.grid_size = None
-        self.grid_delta = 1  # default 1 wavelength pixels
+        self.uv_size = None
+        self.uv_delta = 1  # default 1 wavelength pixels
         self.fwhm = 1.0
         self.sigma_beam = self.fwhm / np.sqrt(4. * np.log(2.))
+        self.uv_beam_array = None
+        self.beam_sky = None
 
-    def set_grid_delta(self, delta):
+    def set_uv_delta(self, delta):
         """Set grid sampling size."""
-        self.grid_delta = delta
+        self.uv_delta = delta
 
     def read_antpos(self, filename, **kwargs):
         """Read antenna position file and set positions to object.
@@ -79,9 +83,53 @@ class UVGridder(object):
         self.sigma_beam = sigma
         self.fwhm = self.sigma_beam * np.sqrt(4 * np.log(2))
 
-    def set_beam(self, beam):
-        """Set beam from outside source."""
-        # This doesn't actually do anything
+    def set_beam(self, beam_in):
+        """Set beam from outside source.
+
+        Can be single beam or an array of beams.
+        Input beam must be in Healpix Format and
+        Ordered from lowest to highest frequency
+        """
+        # wrap single beams in a list, we wish to end with an array
+        # with shape [n_freqs, uv_beam_size, uv_beam_size]
+        if np.ndim(beam_in) == 1:
+            beam_in = [beam_in]
+        self.beam_sky = np.array(beam_in)
+        beam_list = []
+
+        for beam in beam_in:
+            # check that beam is healpix array:
+            if not hp.isnpixok(beam.size):
+                print 'Input image is not in Healpix format'
+                print 'Replacing with Gaussian Beam'
+                beam_list.append(self.gauss())
+
+            beam_list.append(dft.hpx_to_uv(beam, self.uv_delta))
+
+        beam_list = np.array(beam_list)
+        self.uv_beam_array = beam_list
+
+    def set_uv_beam(self, beam_in):
+        """Manually set Beam in the uv plane.
+
+        Input should have shape [Npix, Npix] or [Nfreqs, Npix, Npix]"""
+        if np.ndim(beam_in) == 2:
+            self.uv_beam_array = np.array([beam_in])
+        elif np.ndim(beam_in) == 3:
+            self.uv_beam_array = np.array(beam_in)
+        else:
+            print ("Beams of the shape {0} ".format(np.shape(beam_in))
+                   "are not supported")
+
+    def get_uv_beam(self):
+        """Return beam in the UV plane.
+
+        If no beam set, returns a gaussian.
+        """
+        if self.uv_beam_array is None:
+            return np.tile(self.gauss(), (self.freqs.size, 1, 1))
+        else:
+            return self.uv_beam_array
 
     def __createuv__(self):
         """Create Matrix of UVs from antenna positions."""
@@ -125,21 +173,21 @@ class UVGridder(object):
         #     weights = 1. - (np.abs(uv - grid)/np.diff(grid)[0])**2
         #     weights = np.exp( - (uv - grid)**2/(2*np.diff(grid)[0]**2))
         #     weights = np.exp( - abs(uv - grid)/(np.diff(grid)[0]))
-        _range = (np.arange(self.grid_size) - self.grid_size/2.)
-        _range *= self.grid_delta
+        _range = (np.arange(self.uv_size) - self.uv_size/2.)
+        _range *= self.uv_delta
         x, y = np.meshgrid(_range, _range)
         x = u - x
         y = v - y
         weights = (1. -
-                   np.linalg.norm([x, y], axis=0)/self.grid_delta)
+                   np.linalg.norm([x, y], axis=0)/self.uv_delta)
         weights = np.ma.masked_less_equal(weights, 1e-4).filled(0)
         return weights
 
     def gauss(self):
         """Return simple 2-d Gaussian."""
-        _range = np.arange(self.grid_size)
+        _range = np.arange(self.uv_size)
         y, x = np.meshgrid(_range, _range)
-        cen = self.grid_size/2 + 0.5  # correction for centering
+        cen = self.uv_size/2 + 0.5  # correction for centering
         y = -1 * y + cen
         x = x - cen
         dist = np.linalg.norm([x, y], axis=0)
@@ -149,9 +197,9 @@ class UVGridder(object):
 
     def beamgridder(self, u, v):
         """Grid Gaussian Beam."""
-        beam = np.zeros((self.freqs.size, self.grid_size, self.grid_size))
-        inds = np.logical_and(v <= self.grid_size - 1,
-                              u <= self.grid_size - 1)
+        beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size))
+        inds = np.logical_and(v <= self.uv_size - 1,
+                              u <= self.uv_size - 1)
         for _fq in xrange(self.freqs.size):
             # Create interpolation weights based on grid size and sampling
             beam[_fq] += self.uv_weights(u[_fq], v[_fq])
@@ -171,16 +219,21 @@ class UVGridder(object):
 
     def grid_uvw(self):
         """Create UV coverage from object data."""
-        self.grid_size = int(np.round(self.bl_len_max
+        self.uv_size = int(np.round(self.bl_len_max
                                       / self.wavelength
-                                      / self.grid_delta).max() * 1.1) * 2 + 1
+                                      / self.uv_delta).max() * 1.1) * 2 + 1
         self.uvf_cube = np.zeros(
-            (self.freqs.size, self.grid_size, self.grid_size))
+            (self.freqs.size, self.uv_size, self.uv_size))
         for uv_key in self.uvbins.keys():
             self.sum_uv(uv_key)
+        beam_array = self.get_uv_beam()
+        # if only one beam was given, use that beam for all freqs
+        if np.shape(beam_array)[0] < self.freqs.size:
+            beam_array = np.tile(beam_array[0], (self.freqs.size, 1, 1))
         for _fq in xrange(self.freqs.size):
+            beam = beam_array[_fq]
             self.uvf_cube[_fq] = fftconvolve(self.uvf_cube[_fq],
-                                             self.gauss(), mode='same')
+                                             beam, mode='same')
 
     def calc_all(self, refresh_all=True):
         """Calculate all necessary info.
