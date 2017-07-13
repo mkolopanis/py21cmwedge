@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.integrate import quad
 
-
+# Refer to (Liu et al 2014a) Appendix A for formula references
 def E_inv(redshift=None, omega_matter=None,
           omega_lambda=None, omega_curv=None):
     """Compute co-moving distance by integrating this function."""
@@ -21,9 +21,9 @@ def comoving_distance(redshift=None, hubble_param=1, omega_matter=.27,
 
 def kperp2u(kperp, z):
     """Convert k_perpendicular to interferometric |u|."""
-    return kperp * comoving_distance(z) / (1. + z) / (2. * np.pi)
+    return kperp * comoving_distance(z) / (2. * np.pi)
 
 
 def u2kperp(u, z):
     """Convert interferometric |u| to k_perpendicular."""
-    return u * 2. * np.pi * (1. + z) / comoving_distance(z)
+    return u * 2. * np.pi / comoving_distance(z)
