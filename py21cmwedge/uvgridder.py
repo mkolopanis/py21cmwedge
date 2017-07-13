@@ -118,8 +118,8 @@ class UVGridder(object):
         elif np.ndim(beam_in) == 3:
             self.uv_beam_array = np.array(beam_in)
         else:
-            print ("Beams of the shape {0} ".format(np.shape(beam_in))
-                   "are not supported")
+            print ("Beams of the shape {0} "
+                   "are not supported".format(np.shape(beam_in)))
 
     def get_uv_beam(self):
         """Return beam in the UV plane.
