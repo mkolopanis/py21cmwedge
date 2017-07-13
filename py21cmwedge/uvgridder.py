@@ -8,7 +8,6 @@ from py21cmwedge import cosmo, dft
 import healpy as hp
 
 
-
 class UVGridder(object):
     """Base uvgridder object."""
 
@@ -112,7 +111,8 @@ class UVGridder(object):
     def set_uv_beam(self, beam_in):
         """Manually set Beam in the uv plane.
 
-        Input should have shape [Npix, Npix] or [Nfreqs, Npix, Npix]"""
+        Input should have shape [Npix, Npix] or [Nfreqs, Npix, Npix]
+        """
         if np.ndim(beam_in) == 2:
             self.uv_beam_array = np.array([beam_in])
         elif np.ndim(beam_in) == 3:
@@ -220,8 +220,8 @@ class UVGridder(object):
     def grid_uvw(self):
         """Create UV coverage from object data."""
         self.uv_size = int(np.round(self.bl_len_max
-                                      / self.wavelength
-                                      / self.uv_delta).max() * 1.1) * 2 + 1
+                                    / self.wavelength
+                                    / self.uv_delta).max() * 1.1) * 2 + 1
         self.uvf_cube = np.zeros(
             (self.freqs.size, self.uv_size, self.uv_size))
         for uv_key in self.uvbins.keys():
