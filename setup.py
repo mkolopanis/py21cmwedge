@@ -3,14 +3,18 @@ from setuptools import setup
 import glob
 import os.path as op
 from os import listdir
-
+import sys
 __version__ = '0.0.2'
 
-data_files = [f for f in listdir('./py21cmwedge/data')
+data_files = [op.join('./py21cmwedge/data',f)
+              for f in listdir('./py21cmwedge/data')
               if op.isfile(op.join('./py21cmwedge/data', f))]
 
-test_files = [f for f in listdir('./py21cmwedge/data')
+test_files = [op.join('./py21cmwedge/tests/data',f)
+              for f in listdir('./py21cmwedge/tests/data')
               if op.isfile(op.join('./py21cmwedge/tests/data', f))]
+
+test_files += glob.glob('./py21cmwedge/tests/*.py')
 
 all_files = data_files + test_files
 
