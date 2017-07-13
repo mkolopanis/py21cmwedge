@@ -12,8 +12,12 @@ def hpx_to_uv(map_in, uv_delta):
     # Get info of the input map
     nside = hp.get_nside(map_in)
     pix_size = 1./hp.nside2resol(nside)  # 1./pix_resol to get wavelengths
-    uv_size = pix_size   # Only create a grid as large as the +/- pixel_size/2
-
+    # Only create a grid as large as the +/- pixel_size/2
+    uv_size = np.ceil(pix_size)  # in wavelengths
+    uv_size /= uv_delta  # in pixels
+    # we want to make sure the uv_size is always odd
+    if (uv_size % 2 == 0):
+        uv_size += 1
     # Create a the _u,_v grid and baselines vectors
     _range = np.arange(uv_size).astype(np.float64)
     center = (uv_size - 1)/2
@@ -21,7 +25,7 @@ def hpx_to_uv(map_in, uv_delta):
     _range *= uv_delta
     _v, _u = np.meshgrid(_range, _range)
 
-    uv_beam = np.zeros_like(_u, type=np.complex)
+    uv_beam = np.zeros_like(_u, dtype=np.complex)
 
     # Before DFT, get all pixels above the horizon
     # and stack the unit vectors (x,y) into array
@@ -33,7 +37,7 @@ def hpx_to_uv(map_in, uv_delta):
         __u, __v = _u.ravel()[cnt], _v.ravel()[cnt]
         b_dot_s = np.einsum('i,i...', [__u, __v], s_)
         phases = np.exp(-2j * np.pi * b_dot_s[pix_above_horizon])
-        uv_plane.ravel()[cnt] = np.mean(map_in[pix_above_horizon] * phases)
+        uv_beam.ravel()[cnt] = np.mean(map_in[pix_above_horizon] * phases)
 
     return uv_beam
 
@@ -51,7 +55,7 @@ def uv_to_hpx(uv_beam, nside, uv_delta):
     _range *= uv_delta
     _v, _u = np.meshgrid(_range, _range)
 
-    sky_beam = np.zeros(hp.nside2npix(nside), type=np.complex)
+    sky_beam = np.zeros(hp.nside2npix(nside), dtype=np.complex)
     # Before DFT, get all pixels above the horizon
     # and stack the unit vectors (x,y) into array
     _xyz = hp.pix2vec(nside, np.arange(sky_beam.size))
