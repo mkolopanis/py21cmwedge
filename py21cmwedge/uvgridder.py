@@ -105,7 +105,7 @@ class UVGridder(object):
             else:
                 # make sure beam integrate to unity:
                 _beam = dft.hpx_to_uv(beam, self.uv_delta)
-                _beam /= _beam.sum() * self.uv_delta**2
+                _beam /= _beam.sum() # * self.uv_delta**2
                 beam_list.append(_beam)
 
         beam_list = np.array(beam_list)
@@ -184,7 +184,7 @@ class UVGridder(object):
         weights = (1. -
                    np.linalg.norm([x, y], axis=0)/self.uv_delta)
         weights = np.ma.masked_less_equal(weights, 1e-4).filled(0)
-        weights /= np.sum(weights) 
+        weights /= np.sum(weights)
         return weights
 
     def gauss(self):
@@ -196,7 +196,7 @@ class UVGridder(object):
         x = x - cen
         dist = np.linalg.norm([x, y], axis=0)
         g = np.exp(- dist**2/(2.*self.sigma_beam**2))
-        g /= g.max()
+        g /= g.sum()
         return g
 
     def beamgridder(self, u, v):
