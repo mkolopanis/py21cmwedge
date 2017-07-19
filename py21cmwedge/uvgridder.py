@@ -88,7 +88,7 @@ class UVGridder(object):
         """Return simple 2-d Gaussian."""
         _range = np.arange(self.uv_size)
         y, x = np.meshgrid(_range, _range)
-        cen = self.uv_size/2 + 0.5  # correction for centering
+        cen = (self.uv_size-1)/2. # correction for centering
         y = -1 * y + cen
         x = x - cen
         dist = np.linalg.norm([x, y], axis=0)
@@ -119,7 +119,7 @@ class UVGridder(object):
             else:
                 # make sure beam integrate to unity:
                 _beam = dft.hpx_to_uv(beam, self.uv_delta)
-                _beam /= _beam.sum() # * self.uv_delta**2
+                _beam /= _beam.sum()  # * self.uv_delta**2
                 beam_list.append(_beam)
 
         beam_list = np.array(beam_list)
