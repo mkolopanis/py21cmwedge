@@ -53,6 +53,7 @@ class UVGridder(object):
         """
         self.antpos = antpos
         self.uvw_array = self.__createuv__()
+        self.uvw_stat()
 
     def set_uvw_array(self, uvw):
         """Manually set uvw array from outside source.
@@ -62,6 +63,7 @@ class UVGridder(object):
         if np.shape(uvw[0]) != 3 and np.shape(uvw)[1] == 3:
             uvw = np.transpose(uvw, [1, 0])
         self.uvw_array = uvw
+        self.uvw_stats()
 
     def set_freqs(self, freq):
         """Set Frequency or Array of Frequencies."""
@@ -158,11 +160,13 @@ class UVGridder(object):
         u = u_rows1 - u_rows2
         v = v_rows1 - v_rows2
         w = w_rows1 - w_rows2
-        norms = np.linalg.norm([u.ravel(), v.ravel(), w.ravel()], axis=0)
+        return np.array([u.ravel(), v.ravel(), w.ravel()])
+
+    def uvw_stats(self):
+        """Compute the bl_len_max, and bl_len_min."""
+        norms = np.linalg.norm(self.uvw_array, axis=0)
         self.bl_len_max = np.max(norms)
         self.bl_len_min = np.min(norms[norms > 0])
-
-        return np.array([u.ravel(), v.ravel(), w.ravel()])
 
     def uvw_to_dict(self):
         """Convert UVWs array into a dictionary.
