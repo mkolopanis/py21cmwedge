@@ -184,7 +184,7 @@ class UVGridder(object):
         weights = (1. -
                    np.linalg.norm([x, y], axis=0)/self.uv_delta)
         weights = np.ma.masked_less_equal(weights, 1e-4).filled(0)
-        weights /= np.sum(weights) * self.uv_delta**2
+        weights /= np.sum(weights) 
         return weights
 
     def gauss(self):
