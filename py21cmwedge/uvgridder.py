@@ -298,7 +298,7 @@ class UVGridder(object):
             beam_array = np.tile(beam_array[0], (self.freqs.size, 1, 1))
         for _fq in xrange(self.freqs.size):
             beam = beam_array[_fq]
-            self.uvf_cube[_fq] += fftconvolve(self.uvf_cube[_fq],
+            self.uvf_cube[_fq] = fftconvolve(self.uvf_cube[_fq],
                                              beam, mode='same')
 
     def calc_all(self, refresh_all=True):
