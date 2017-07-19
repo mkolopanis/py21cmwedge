@@ -28,10 +28,31 @@ class UVGridder(object):
         self.sigma_beam = self.fwhm / np.sqrt(4. * np.log(2.))
         self.uv_beam_array = None
         self.beam_sky = None
+        self.omega = 2 * np.pi / (23. * 3600. + 56 * 60. + 4.09)
+        self.t_int = 0  # integration or snapshot time of array
+        self.latitude = 0  # set default array at the equator
+        self.ra = None
+        self.n_obs = 1  # Default to a single snapshot
 
     def set_uv_delta(self, delta):
         """Set grid sampling size."""
         self.uv_delta = delta
+
+    def set_t_int(self, t_int):
+        """Set the integration time of array."""
+        self.t_int = t_int
+
+    def set_omega(self, omega):
+        """Manually set rotation speed of planet (rad/s)."""
+        self.omega = omega
+
+    def set_latitude(self, latitude):
+        """Set latitude of array."""
+        self.latitude = latitude
+
+    def set_n_obs(self, n_obs):
+        """Set number of time samples."""
+        self.n_obs = n_obs
 
     def read_antpos(self, filename, **kwargs):
         """Read antenna position file and set positions to object.
@@ -88,7 +109,7 @@ class UVGridder(object):
         """Return simple 2-d Gaussian."""
         _range = np.arange(self.uv_size)
         y, x = np.meshgrid(_range, _range)
-        cen = (self.uv_size-1)/2. # correction for centering
+        cen = (self.uv_size-1)/2.  # correction for centering
         y = -1 * y + cen
         x = x - cen
         dist = np.linalg.norm([x, y], axis=0)
@@ -168,13 +189,43 @@ class UVGridder(object):
         self.bl_len_max = np.max(norms)
         self.bl_len_min = np.min(norms[norms > 0])
 
-    def uvw_to_dict(self):
+    def simulate_observation(self, t_int=self.t_int,
+                             n_obs=self.n_obs, ra=self.latitude):
+        """Simulate the sky moving over the array."""
+        # obnoxiously precise rotation speed of the Earth.
+        hour_angles = np.arange(n_obs) * t_int * self.omega
+
+        # delta is hte this should be the latitude of the array
+        # this is used to transform u,v,w to XYZ
+        delta = np.repeat(self.latitude, n_obs)
+        # delta_prime is the ra of the observed object
+        # drift is used for an object which will move over zenith
+        cH = np.cos(hour_angles)
+        sH = np.sin(hour_angles)
+        cd = np.cos(delta)
+        sd = np.sin(delta)
+        cr = np.cos(ra)
+        sr = np.sin(ra)
+        rotation_matrix = np.array([
+            [cH, -sd * sH, sH * cd],
+            [sr * sH, sr * sd * cH + cr * cd, -sr * cd * cH + cr * sd],
+            [-cr * sH, -sd * cr * cH + sr * cd, cr * cd * cH + sr * sd]])
+        new_uvw_array = []
+        for uvw in self.uvw_array.T:
+            _uvw = np.einsum('jik,i', rotation_matrix, uvw)
+            new_uvw_array.extend(np.transpose(_uvw, [1, 0]))
+        new_uvw_array = np.array(new_uvw_array)
+        all_zero = np.all(new_uvw_array == 0, axis=1)
+        non_zero = np.logical_not(all_zero)
+        return new_uvw_array.T
+
+    def uvw_to_dict(self, uvw_array=self.uvw_array):
         """Convert UVWs array into a dictionary.
 
         Assumes W term is zero or very very small.
         Elemetns of dictionary are lists of bls keyed by uv lengths
         """
-        for _u, _v in self.uvw_array[:2].T:
+        for _u, _v in uvw_array[:2].T:
             if np.linalg.norm([_u, _v]) == 0:
                 continue
             uv = '{0:.3f},{1:.3f}'.format(_u, _v)
@@ -254,5 +305,6 @@ class UVGridder(object):
         if refresh_all:
             self.uvbins = {}
             self.uvf_cube = None
-        self.uvw_to_dict()
+        observed_uvw = self.simulate_observation()
+        self.uvw_to_dict(uvw_array=observed_uvw)
         self.grid_uvw()
