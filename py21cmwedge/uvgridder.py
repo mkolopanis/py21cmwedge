@@ -82,6 +82,18 @@ class UVGridder(object):
         self.sigma_beam = sigma
         self.fwhm = self.sigma_beam * np.sqrt(4 * np.log(2))
 
+    def gauss(self):
+        """Return simple 2-d Gaussian."""
+        _range = np.arange(self.uv_size)
+        y, x = np.meshgrid(_range, _range)
+        cen = self.uv_size/2 + 0.5  # correction for centering
+        y = -1 * y + cen
+        x = x - cen
+        dist = np.linalg.norm([x, y], axis=0)
+        g = np.exp(- dist**2/(2.*self.sigma_beam**2))
+        g /= g.sum()
+        return g
+
     def set_beam(self, beam_in):
         """Set beam from outside source.
 
@@ -186,18 +198,6 @@ class UVGridder(object):
         weights = np.ma.masked_less_equal(weights, 1e-4).filled(0)
         weights /= np.sum(weights)
         return weights
-
-    def gauss(self):
-        """Return simple 2-d Gaussian."""
-        _range = np.arange(self.uv_size)
-        y, x = np.meshgrid(_range, _range)
-        cen = self.uv_size/2 + 0.5  # correction for centering
-        y = -1 * y + cen
-        x = x - cen
-        dist = np.linalg.norm([x, y], axis=0)
-        g = np.exp(- dist**2/(2.*self.sigma_beam**2))
-        g /= g.sum()
-        return g
 
     def beamgridder(self, u, v):
         """Grid Gaussian Beam."""
