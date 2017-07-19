@@ -192,7 +192,7 @@ class UVGridder(object):
         #     weights = 1. - (np.abs(uv - grid)/np.diff(grid)[0])**2
         #     weights = np.exp( - (uv - grid)**2/(2*np.diff(grid)[0]**2))
         #     weights = np.exp( - abs(uv - grid)/(np.diff(grid)[0]))
-        _range = (np.arange(self.uv_size) - self.uv_size/2.)
+        _range = (np.arange(self.uv_size) - (self.uv_size - 1)/2.)
         _range *= self.uv_delta
         x, y = np.meshgrid(_range, _range)
         x = u - x
