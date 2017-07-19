@@ -53,7 +53,7 @@ class UVGridder(object):
         """
         self.antpos = antpos
         self.uvw_array = self.__createuv__()
-        self.uvw_stat()
+        self.uvw_stats()
 
     def set_uvw_array(self, uvw):
         """Manually set uvw array from outside source.
