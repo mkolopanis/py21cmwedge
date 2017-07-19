@@ -289,7 +289,7 @@ class UVGridder(object):
                                     / self.wavelength
                                     / self.uv_delta).max()) * 2 + 5
         self.uvf_cube = np.zeros(
-            (self.freqs.size, self.uv_size, self.uv_size))
+            (self.freqs.size, self.uv_size, self.uv_size), dtype=np.complex)
         for uv_key in self.uvbins.keys():
             self.sum_uv(uv_key)
         beam_array = self.get_uv_beam()
@@ -298,7 +298,7 @@ class UVGridder(object):
             beam_array = np.tile(beam_array[0], (self.freqs.size, 1, 1))
         for _fq in xrange(self.freqs.size):
             beam = beam_array[_fq]
-            self.uvf_cube[_fq] = fftconvolve(self.uvf_cube[_fq],
+            self.uvf_cube[_fq] += fftconvolve(self.uvf_cube[_fq],
                                              beam, mode='same')
 
     def calc_all(self, refresh_all=True):
