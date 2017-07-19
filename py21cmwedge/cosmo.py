@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.integrate import quad
 
+
 # Refer to (Liu et al 2014a) Appendix A for formula references
 def E_inv(redshift=None, omega_matter=None,
           omega_lambda=None, omega_curv=None):
