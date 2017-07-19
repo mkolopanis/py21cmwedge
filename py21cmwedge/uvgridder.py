@@ -230,7 +230,7 @@ class UVGridder(object):
         Assumes W term is zero or very very small.
         Elemetns of dictionary are lists of bls keyed by uv lengths
         """
-        if uvw_array = None:
+        if uvw_array is None:
             uvw_array = np.copy(self.uvw_array)
         for _u, _v in uvw_array[:2].T:
             if np.linalg.norm([_u, _v]) == 0:
