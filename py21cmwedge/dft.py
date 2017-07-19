@@ -20,7 +20,7 @@ def hpx_to_uv(map_in, uv_delta):
         uv_size += 1
     # Create a the _u,_v grid and baselines vectors
     _range = np.arange(uv_size).astype(np.float64)
-    center = (uv_size - 1)/2
+    center = (uv_size - 1)/2.
     _range -= center
     _range *= uv_delta
     _v, _u = np.meshgrid(_range, _range)
@@ -50,7 +50,7 @@ def uv_to_hpx(uv_beam, nside, uv_delta):
     """
     uv_size = uv_beam.shape[0]
     _range = np.arange(uv_size).astype(np.float64)
-    center = (uv_size - 1)/2
+    center = (uv_size - 1)/2.
     _range -= center
     _range *= uv_delta
     _v, _u = np.meshgrid(_range, _range)
