@@ -189,10 +189,15 @@ class UVGridder(object):
         self.bl_len_max = np.max(norms)
         self.bl_len_min = np.min(norms[norms > 0])
 
-    def simulate_observation(self, t_int=self.t_int,
-                             n_obs=self.n_obs, ra=self.latitude):
+    def simulate_observation(self, t_int=None, n_obs=None, ra=None):
         """Simulate the sky moving over the array."""
         # obnoxiously precise rotation speed of the Earth.
+        if t_int is None:
+            t_int = self.t_int
+        if n_obs is None:
+            n_obs = self.n_obs
+        if ra is None:
+            ra = self.latitude
         hour_angles = np.arange(n_obs) * t_int * self.omega
 
         # delta is hte this should be the latitude of the array
@@ -219,12 +224,14 @@ class UVGridder(object):
         non_zero = np.logical_not(all_zero)
         return new_uvw_array.T
 
-    def uvw_to_dict(self, uvw_array=self.uvw_array):
+    def uvw_to_dict(self, uvw_array=None):
         """Convert UVWs array into a dictionary.
 
         Assumes W term is zero or very very small.
         Elemetns of dictionary are lists of bls keyed by uv lengths
         """
+        if uvw_array = None:
+            uvw_array = np.copy(self.uvw_array)
         for _u, _v in uvw_array[:2].T:
             if np.linalg.norm([_u, _v]) == 0:
                 continue
