@@ -105,7 +105,7 @@ class UVGridder(object):
             else:
                 # make sure beam integrate to unity:
                 _beam = dft.hpx_to_uv(beam, self.uv_delta)
-                _beam /= _beam.sum() * self.uv_delta**2
+                _beam /= _beam.sum()  # * self.uv_delta**2
                 beam_list.append(_beam)
 
         beam_list = np.array(beam_list)
