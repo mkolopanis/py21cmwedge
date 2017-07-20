@@ -315,6 +315,6 @@ class UVGridder(object):
         if self.n_obs > 1:
             observed_uvw = self.simulate_observation()
         else:
-            observed_uvw = copy.copy(self.uvbins)
+            observed_uvw = self.uvbins.copy()
         self.uvw_to_dict(uvw_array=observed_uvw)
         self.grid_uvw()
