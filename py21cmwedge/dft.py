@@ -13,7 +13,12 @@ def hpx_to_uv(map_in, uv_delta):
     nside = hp.get_nside(map_in)
     pix_size = 1./hp.nside2resol(nside)  # 1./pix_resol to get wavelengths
     # Only create a grid as large as the +/- pixel_size/2
-    uv_size = np.ceil(pix_size)  # in wavelengths
+    uv_size = np.ceil(pix_size/2.)  # in wavelengths
+    # Cut the size in half so only extends the amount of 1 Healpix
+    # pixel in wavelengths
+    # The corners will be slightly longer but that should be okay.
+    # Perhaps the best way to fix this would be to dynamically
+    # calculate when the main lobe ends and only go out to there
     uv_size /= uv_delta  # in pixels
     # we want to make sure the uv_size is always odd
     if (uv_size % 2 == 0):
