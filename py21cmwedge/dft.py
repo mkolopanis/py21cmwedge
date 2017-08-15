@@ -20,6 +20,7 @@ def hpx_to_uv(map_in, uv_delta):
     # Perhaps the best way to fix this would be to dynamically
     # calculate when the main lobe ends and only go out to there
     uv_size /= uv_delta  # in pixels
+    uv_size = int(uv_size)
     # we want to make sure the uv_size is always odd
     if (uv_size % 2 == 0):
         uv_size += 1
