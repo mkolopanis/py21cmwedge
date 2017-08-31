@@ -1,9 +1,13 @@
 [run]
-omit = */tests/*
-omit = */notebooks/*
-omit = */data/*
+omit =
+    */tests/*
+    */tests/data/*
+    */notebooks/*
+    */data/*
 
 [report]
-omit = */tests/*
-omit = */notebooks/*
-omit = */data/*
+omit =
+    */tests/*
+    */tests/data/*
+    */notebooks/*
+    */data/*
