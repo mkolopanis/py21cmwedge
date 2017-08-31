@@ -26,7 +26,7 @@ install:
   - source activate test-environment
   - conda install -c conda-forge healpy
   - pip install coveralls
-script: nosetests py21cmwedge --with-coverage --cover-package=pyuvdata
+script: nosetests py21cmwedge --with-coverage --cover-package=py21cmwedge
 
 after_success:
     - coveralls
