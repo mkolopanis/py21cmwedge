@@ -1,7 +1,7 @@
 [run]
 omit = */tests/*
 omit = */notebooks/*
-omit = */data*
+omit = */data/*
 
 [report]
 omit = */tests/*
