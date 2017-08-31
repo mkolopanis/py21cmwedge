@@ -187,7 +187,8 @@ class UVGridder(object):
         """Compute the bl_len_max, and bl_len_min."""
         norms = np.linalg.norm(self.uvw_array, axis=0)
         self.bl_len_max = np.max(norms)
-        self.bl_len_min = np.min(norms[norms > 0])
+        if self.bl_len_max != 0:
+            self.bl_len_min = np.min(norms[norms > 0])
 
     def simulate_observation(self, t_int=None, n_obs=None, ra=None):
         """Simulate the sky moving over the array."""
@@ -257,7 +258,7 @@ class UVGridder(object):
         y = v - y
         weights = (1. -
                    np.linalg.norm([x, y], axis=0)/self.uv_delta)
-        weights = np.ma.masked_less_equal(weights, 1e-4).filled(0)
+        weights = np.ma.masked_less_equal(weights, 0).filled(0)
         weights /= np.sum(weights)
         return weights
 
