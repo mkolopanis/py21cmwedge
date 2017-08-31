@@ -19,7 +19,7 @@ This package requires the following packages :
 * healpy
 
 ## Install py21cmwedge
-after cloning this repository, installation can be accomplished by executing
+After cloning this repository, installation can be accomplished by executing
 one of the following inside the py21cmwedge directory
 
 ```pip install .```
