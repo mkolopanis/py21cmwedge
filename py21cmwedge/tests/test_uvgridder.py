@@ -144,6 +144,6 @@ def test_gauss_sum():
     test_fwhm = 3
     test_sigma = test_fwhm / np.sqrt(4. * np.log(2))
     test_obj.set_sigma_beam(test_sigma)
-    test_obj.grid_size = 101
+    test_obj.uv_size = 101
     g = test_obj.gauss()
     nt.assert_equal(g.max(), 1)
