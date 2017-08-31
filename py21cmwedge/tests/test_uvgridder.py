@@ -139,11 +139,11 @@ def test_zero_uvbin():
 
 
 def test_gauss_sum():
-    """Test Gaussian peak is unity."""
+    """Test Gaussian sum is unity."""
     test_obj = UVTest()
     test_fwhm = 3
     test_sigma = test_fwhm / np.sqrt(4. * np.log(2))
     test_obj.set_sigma_beam(test_sigma)
     test_obj.uv_size = 101
     g = test_obj.gauss()
-    nt.assert_equal(g.max(), 1)
+    nt.assert_equal(g.sum(), 1)
