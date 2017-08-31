@@ -1,4 +1,5 @@
 sudo: required
+dist: trusty
 language: python
 python:
     - "2.7"
@@ -15,8 +16,8 @@ install:
   - conda info -a
   # create environment and install dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy astropy nose pip
-  - conda install -c conda-forge healpy
   - source activate test-environment
+  - conda install -c conda-forge healpy
   - pip install coveralls
  script: nosetests py21cmwedge --with-coverage --cover-package=pyuvdata
 
