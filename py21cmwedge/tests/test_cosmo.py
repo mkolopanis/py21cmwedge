@@ -21,7 +21,7 @@ def test_k_to_u():
     """Test k to |u| against known value."""
     test_k = 0.0014275626347673188
     redshift = 8.5
-    k_to_u = cosmo.kperp2u(test_k, redshfit)
+    k_to_u = cosmo.kperp2u(test_k, redshift)
     nt.assert_equal(k_to_u, 1.5)
 
 
