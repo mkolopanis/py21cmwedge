@@ -140,6 +140,11 @@ class UVGridder(object):
             else:
                 # make sure beam integrate to unity:
                 _beam = dft.hpx_to_uv(beam, self.uv_delta)
+                # We are most interested in the central lobe of the
+                # main beam. We can mask out everything less that 0
+                # to get around this for now, but there may be
+                # a better way to handle this
+                _beam = np.ma.masked_less(_beam, 0).filled(0)
                 _beam /= _beam.sum()  # * self.uv_delta**2
                 beam_list.append(_beam)
 
