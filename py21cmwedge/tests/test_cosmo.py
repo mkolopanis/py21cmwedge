@@ -4,7 +4,7 @@ import nose
 import os
 import copy
 import numpy as np
-from py21cmwedge import cosmology
+from py21cmwedge import cosmo
 
 testdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 
