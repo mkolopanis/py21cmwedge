@@ -20,13 +20,13 @@ class UVTest(UVGridder):
 
 def test_equality():
     """Test base object."""
-    test_obj = UVGridder()
+    test_obj = UVTest()
     nt.assert_equal(test_obj, test_obj)
 
 
 def test_unequality():
     """Test that inequality is handled."""
-    test_obj = UVGridder()
+    test_obj = UVTest()
     test_obj2 = copy.deepcopy(test_obj)
     test_obj2.freqs = 1.5e6
     nt.assert_not_equal(test_obj, test_obj2)
@@ -147,3 +147,43 @@ def test_gauss_sum():
     test_obj.uv_size = 101
     g = test_obj.gauss()
     nt.assert_equal(g.sum(), 1)
+
+
+def test_uv_delta():
+    """Test setting uv delta."""
+    test_obj = UVTest()
+    test_delta = .125
+    test_obj.set_uv_delta(.125)
+    nt.assert_equal(test_obj.uv_delta, test_delta)
+
+
+def test_t_int():
+    """Test setting integration time."""
+    test_obj = UVTest()
+    test_t_int = 11
+    test_obj.set_t_int(11)
+    nt.assert_equal(test_obj.t_int, test_t_int)
+
+
+def test_set_omega():
+    """Test setting rotation omega."""
+    test_obj = UVTest()
+    test_omega = 5.5e-5
+    test_obj.set_omega(5.5e-5)
+    nt.assert_equal(test_obj.omega, test_omega)
+
+
+def test_set_latitude():
+    """Test setting latitude of array."""
+    test_obj = UVTest()
+    test_lat = -40.377
+    test_obj.set_latitude(-40.377 * np.pi/180)
+    nt.assert_equal(test_obj.latitude, test_lat * np.pi / 180)
+
+
+def test_n_obs():
+    """Test setting N_obs."""
+    test_obj = UVTest()
+    test_n_obs = 530
+    test_obj.set_n_obs(530)
+    nt.assert_equal(test_obj.n_obs, test_n_obs)
