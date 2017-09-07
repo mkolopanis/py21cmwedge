@@ -2,7 +2,6 @@
 import numpy as np
 import os
 from astropy import constants as const
-from scipy.ndimage import filters
 from scipy.signal import fftconvolve
 from py21cmwedge import cosmo, dft
 import healpy as hp
