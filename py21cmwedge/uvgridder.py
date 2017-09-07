@@ -258,8 +258,8 @@ class UVGridder(object):
         x, y = np.meshgrid(_range, _range)
         x = u - x
         y = v - y
-        weights = (1. -
-                   np.linalg.norm([x, y], axis=0)/self.uv_delta)
+        dists = np.linalg.norm([x, y], axis=0)
+        weights = (1. - dists / self.uv_delta)
         weights = np.ma.masked_less_equal(weights, 0).filled(0)
         weights /= np.sum(weights)
         return weights
