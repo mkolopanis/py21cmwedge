@@ -265,18 +265,6 @@ class UVGridder(object):
         weights /= np.sum(weights)
         return weights
 
-    def beamgridder(self, u, v):
-        """Grid Gaussian Beam."""
-        beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size))
-        inds = np.logical_and(v <= self.uv_size - 1,
-                              u <= self.uv_size - 1)
-        for _fq in xrange(self.freqs.size):
-            # Create interpolation weights based on grid size and sampling
-            beam[_fq] += self.uv_weights(u[_fq], v[_fq])
-            # filters.gaussian_filter(beam[_fq], self.sigma_beam,
-            #                   output=beam[_fq])
-        return beam
-
     def sum_uv(self, uv_key):
         """Convert uvbin dictionary to a UV-plane."""
         uvbin = self.uvbins[uv_key]
@@ -284,7 +272,10 @@ class UVGridder(object):
         u, v = np.array(map(float, uv_key.split(',')))
         u /= self.wavelength
         v /= self.wavelength
-        _beam = self.beamgridder(u=u, v=v)
+        _beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size))
+        for _fq in xrange(self.freqs.size):
+            # Create interpolation weights based on grid size and sampling
+            beam[_fq] += self.uv_weights(u[_fq], v[_fq])
         self.uvf_cube += nbls * _beam
 
     def grid_uvw(self):
