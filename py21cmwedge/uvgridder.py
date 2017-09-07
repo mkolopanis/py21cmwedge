@@ -272,7 +272,8 @@ class UVGridder(object):
         u, v = np.array(map(float, uv_key.split(',')))
         u /= self.wavelength
         v /= self.wavelength
-        _beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size))
+        _beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size),
+                         dtype=np.complex)
         for _fq in xrange(self.freqs.size):
             # Create interpolation weights based on grid size and sampling
             beam[_fq] += self.uv_weights(u[_fq], v[_fq])
