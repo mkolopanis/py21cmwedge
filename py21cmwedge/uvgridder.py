@@ -226,8 +226,6 @@ class UVGridder(object):
             _uvw = np.einsum('jik,i', rotation_matrix, uvw)
             new_uvw_array.extend(np.transpose(_uvw, [1, 0]))
         new_uvw_array = np.array(new_uvw_array)
-        all_zero = np.all(new_uvw_array == 0, axis=1)
-        non_zero = np.logical_not(all_zero)
         return new_uvw_array.T
 
     def uvw_to_dict(self, uvw_array=None):
