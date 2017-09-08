@@ -23,6 +23,7 @@ class UVGridder(object):
         self.uvf_cube = None
         self.uv_size = None
         self.uv_delta = 1  # default 1 wavelength pixels
+        self.wavelength_scale = 2.  # Max wavelength scale of antenna
         self.fwhm = 1.0
         self.sigma_beam = self.fwhm / np.sqrt(4. * np.log(2.))
         self.uv_beam_array = None
@@ -259,7 +260,7 @@ class UVGridder(object):
         x = u - x
         y = v - y
         dists = np.linalg.norm([x, y], axis=0)
-        weights = (1. - dists / self.uv_delta)
+        weights = (1. - dists / self.wavelength_scale)
         weights = np.ma.masked_less_equal(weights, 0).filled(0)
         weights /= np.sum(weights)
         return weights
