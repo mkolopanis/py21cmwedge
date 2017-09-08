@@ -276,7 +276,7 @@ class UVGridder(object):
                          dtype=np.complex)
         for _fq in xrange(self.freqs.size):
             # Create interpolation weights based on grid size and sampling
-            beam[_fq] += self.uv_weights(u[_fq], v[_fq])
+            _beam[_fq] += self.uv_weights(u[_fq], v[_fq])
         self.uvf_cube += nbls * _beam
 
     def grid_uvw(self):
