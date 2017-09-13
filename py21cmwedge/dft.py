@@ -29,7 +29,7 @@ def hpx_to_uv(map_in, uv_delta):
     center = (uv_size - 1)/2.
     _range -= center
     _range *= uv_delta
-    _v, _u = np.meshgrid(_range, _range)
+    _u, _v = np.meshgrid(_range, _range)
 
     uv_beam = np.zeros_like(_u, dtype=np.complex)
 
@@ -59,7 +59,7 @@ def uv_to_hpx(uv_beam, nside, uv_delta):
     center = (uv_size - 1)/2.
     _range -= center
     _range *= uv_delta
-    _v, _u = np.meshgrid(_range, _range)
+    _u, _v = np.meshgrid(_range, _range)
 
     sky_beam = np.zeros(hp.nside2npix(nside), dtype=np.complex)
     # Before DFT, get all pixels above the horizon
