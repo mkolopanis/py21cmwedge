@@ -29,8 +29,7 @@ def comoving_distance(redshift=None, mega_matter=omega_matter,
                       omega_lambda=omega_lambda, omega_curv=omega_curv):
         """Calculate comoving distance for a Lambda_CDM cosmology."""
         hubble_dist = 3e3 / hubble_param
-        integral, err = quad(lambda z: 1/E(z), 0., redshift,
-                             args=(omega_matter, omega_lambda, omega_curv))
+        integral, err = quad(lambda z: 1/Ez(z), 0., redshift)
         return hubble_dist * integral
 
 
