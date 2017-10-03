@@ -23,6 +23,10 @@ A list of the notebooks and what information they include:
 * Beam_Gridding
    
    A comparison of how this package and FHD grid the Beam, a single baseline and two baselines onto the UV plane.
+   
+* Rotation_Synthesis
+   
+   A demonstration of how rotation synthesis is handled at the [u,v,w] level with this package
 
 *  UVF_Uniform_Comparion
 
