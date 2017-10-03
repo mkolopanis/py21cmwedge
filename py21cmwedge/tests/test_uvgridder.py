@@ -230,6 +230,34 @@ def test_set_uv_beam():
     nt.assert_true(np.allclose(test_obj.get_uv_beam(), test_beam))
 
 
+def test_set_uv_beam_dims():
+    """Test the set_uv_beam is same as input with ndims=3."""
+    test_obj = UVTest()
+    test_beam = np.zeros((1, 5, 5), dtype=np.complex)
+    test_beam[0, 1, 2] += 1
+    test_obj.set_uv_beam(test_beam)
+    nt.assert_true(np.allclose(test_obj.get_uv_beam(), test_beam))
+
+
+@nt.raises(ValueError)
+def test_set_uv_beam_dims():
+    """Test the set_uv_beam raises exception for bad ndim."""
+    test_obj = UVTest()
+    test_beam = np.zeros((1, 1, 5, 5), dtype=np.complex)
+    test_beam[0, 0, 1, 2] += 1
+    test_obj.set_uv_beam(test_beam)
+
+
+def test_no_set_beam():
+    """Test returns gauss when no beam set."""
+    test_obj = UVTest()
+    test_obj.uv_size = 13
+    test_obj.set_freqs([150e6])
+    test_shape = (1, 13, 13)
+    beam_shape = test_obj.get_uv_beam().shape
+    nt.assert_equal(test_shape, beam_shape)
+
+
 def test_observation():
     """Test that simulate_observation returns correct size array."""
     test_obj = UVTest()
