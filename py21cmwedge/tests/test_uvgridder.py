@@ -138,6 +138,16 @@ def test_zero_uvbin():
     nt.assert_equal(test_obj.uvbins, test_uvbin)
 
 
+def test_uvbin_is_dict():
+    """Test uvbins get saved as dict."""
+    test_obj = UVTest()
+    test_uvw = np.zeros((3, 200)) + np.array([[14.6], [0], [0]])
+    test_uvbin = {"14.600,0.000": 200*["14.600,0.000"]}
+    test_obj.set_uvw_array(test_uvw)
+    test_obj.uvw_to_dict()
+    nt.assert_equal(test_obj.uvbins, test_uvbin)
+
+
 def test_gauss_sum():
     """Test Gaussian sum is unity."""
     test_obj = UVTest()
@@ -187,3 +197,25 @@ def test_n_obs():
     test_n_obs = 530
     test_obj.set_n_obs(530)
     nt.assert_equal(test_obj.n_obs, test_n_obs)
+
+
+def test_set_beam_type():
+    """Test the type uv_beam are complex."""
+    test_obj = UVTest()
+    test_fwhm = 3
+    test_obj.set_fwhm(test_fwhm)
+    test_obj.uv_size = 13
+    # put a delta function on the sky
+    test_beam = np.zeros(12*128l**2)
+    test_beam[0] += 1
+    test_obj.set_beam(test_beam)
+    nt.assert_true(isinstance(test_obj.get_uv_beam().flatten()[0], complex))
+
+
+def test_set_uv_beam():
+    """Test the set_uv_beam is same as input."""
+    test_obj = UVTest()
+    test_beam = np.zeros((5, 5), dtype=np.complex)
+    test_beam[1, 2] += 1
+    test_obj.set_uv_beam(test_beam)
+    nt.assert_true(np.allclose(test_obj.get_uv_beam(), test_beam))
