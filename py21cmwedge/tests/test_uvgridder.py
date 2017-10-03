@@ -212,6 +212,15 @@ def test_set_beam_type():
     nt.assert_true(isinstance(test_obj.get_uv_beam().flatten()[0], complex))
 
 
+@nt.raises(ValueError)
+def test_bad_beam_pix():
+    """Test that module refuses beams of the wrong size."""
+    test_obj = UVTest()
+    test_beam = np.zeros(12 * 128l**2 - 1)
+    test_obj.set_beam(test_beam)
+    test_obj.set_uv_beam(test_beam)
+
+
 def test_set_uv_beam():
     """Test the set_uv_beam is same as input."""
     test_obj = UVTest()
@@ -219,3 +228,23 @@ def test_set_uv_beam():
     test_beam[1, 2] += 1
     test_obj.set_uv_beam(test_beam)
     nt.assert_true(np.allclose(test_obj.get_uv_beam(), test_beam))
+
+
+def test_observation():
+    """Test that simulate_observation returns correct size array."""
+    test_obj = UVTest()
+    test_obj.set_t_int(60)
+    test_obj.set_n_obs(12)
+    test_uvw = np.zeros((3, 100)) + np.array([[14.6], [0], [0]])
+    test_obj.set_uvw_array(test_uvw)
+    new_uvw_array = test_obj.simulate_observation()
+    nt.assert_equal(np.shape(new_uvw_array)[-1], 12 * 100)
+
+
+def test_weights_sum():
+    """Test the uv_weights are unity normalized."""
+    test_obj = UVTest()
+    test_obj.set_uv_delta(.5)
+    test_obj.uv_size = 13
+    test_weights = test_obj.uv_weights(1, 1)
+    nt.assert_equal(test_weights.sum(), 1)
