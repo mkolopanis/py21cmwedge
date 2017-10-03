@@ -24,7 +24,7 @@ A list of the notebooks and what information they include:
    
    A comparison of how this package and FHD grid the Beam, a single baseline and two baselines onto the UV plane.
 
-* Relative_Weight_Heights (name change TBD)
+*  UVF_Uniform_Comparion
 
    A comparison of how this pacakge and FHD+Eppsilon grid entire arrays in uniform weighting
 
