@@ -134,9 +134,9 @@ class UVGridder(object):
         for beam in beam_in:
             # check that beam is healpix array:
             if not hp.isnpixok(beam.size):
-                print 'Input image is not in Healpix format'
-                print 'Replacing with Gaussian Beam'
-                beam_list.append(self.gauss())
+                raise ValueError('Input image is not in Healpix format. ' +
+                                 'Input image only has {0}'.format(beam.size) +
+                                 ' pixels')
             else:
                 # make sure beam integrate to unity:
                 _beam = dft.hpx_to_uv(beam, self.uv_delta)
