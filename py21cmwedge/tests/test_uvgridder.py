@@ -138,6 +138,16 @@ def test_zero_uvbin():
     nt.assert_equal(test_obj.uvbins, test_uvbin)
 
 
+def test_uvbin_is_dict():
+    """Test uvbins get saved as dict."""
+    test_obj = UVTest()
+    test_uvw = np.zeros((3, 200)) + np.array([[14.6], [0], [0]])
+    test_uvbin = {"14.600,0.000": 200*["14.600,0.000"]}
+    test_obj.set_uvw_array(test_uvw)
+    test_obj.uvw_to_dict()
+    nt.assert_equal(test_obj.uvbins, test_uvbin)
+
+
 def test_gauss_sum():
     """Test Gaussian sum is unity."""
     test_obj = UVTest()
@@ -187,3 +197,82 @@ def test_n_obs():
     test_n_obs = 530
     test_obj.set_n_obs(530)
     nt.assert_equal(test_obj.n_obs, test_n_obs)
+
+
+def test_set_beam_type():
+    """Test the type uv_beam are complex."""
+    test_obj = UVTest()
+    test_fwhm = 3
+    test_obj.set_fwhm(test_fwhm)
+    test_obj.uv_size = 13
+    # put a delta function on the sky
+    test_beam = np.zeros(12*128l**2)
+    test_beam[0] += 1
+    test_obj.set_beam(test_beam)
+    nt.assert_true(isinstance(test_obj.get_uv_beam().flatten()[0], complex))
+
+
+@nt.raises(ValueError)
+def test_bad_beam_pix():
+    """Test that module refuses beams of the wrong size."""
+    test_obj = UVTest()
+    test_beam = np.zeros(12 * 128l**2 - 1)
+    test_obj.set_beam(test_beam)
+    test_obj.set_uv_beam(test_beam)
+
+
+def test_set_uv_beam():
+    """Test the set_uv_beam is same as input."""
+    test_obj = UVTest()
+    test_beam = np.zeros((5, 5), dtype=np.complex)
+    test_beam[1, 2] += 1
+    test_obj.set_uv_beam(test_beam)
+    nt.assert_true(np.allclose(test_obj.get_uv_beam(), test_beam))
+
+
+def test_set_uv_beam_dims():
+    """Test the set_uv_beam is same as input with ndims=3."""
+    test_obj = UVTest()
+    test_beam = np.zeros((1, 5, 5), dtype=np.complex)
+    test_beam[0, 1, 2] += 1
+    test_obj.set_uv_beam(test_beam)
+    nt.assert_true(np.allclose(test_obj.get_uv_beam(), test_beam))
+
+
+@nt.raises(ValueError)
+def test_set_uv_beam_dims():
+    """Test the set_uv_beam raises exception for bad ndim."""
+    test_obj = UVTest()
+    test_beam = np.zeros((1, 1, 5, 5), dtype=np.complex)
+    test_beam[0, 0, 1, 2] += 1
+    test_obj.set_uv_beam(test_beam)
+
+
+def test_no_set_beam():
+    """Test returns gauss when no beam set."""
+    test_obj = UVTest()
+    test_obj.uv_size = 13
+    test_obj.set_freqs([150e6])
+    test_shape = (1, 13, 13)
+    beam_shape = test_obj.get_uv_beam().shape
+    nt.assert_equal(test_shape, beam_shape)
+
+
+def test_observation():
+    """Test that simulate_observation returns correct size array."""
+    test_obj = UVTest()
+    test_obj.set_t_int(60)
+    test_obj.set_n_obs(12)
+    test_uvw = np.zeros((3, 100)) + np.array([[14.6], [0], [0]])
+    test_obj.set_uvw_array(test_uvw)
+    new_uvw_array = test_obj.simulate_observation()
+    nt.assert_equal(np.shape(new_uvw_array)[-1], 12 * 100)
+
+
+def test_weights_sum():
+    """Test the uv_weights are unity normalized."""
+    test_obj = UVTest()
+    test_obj.set_uv_delta(.5)
+    test_obj.uv_size = 13
+    test_weights = test_obj.uv_weights(1, 1)
+    nt.assert_equal(test_weights.sum(), 1)
