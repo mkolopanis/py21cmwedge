@@ -276,3 +276,28 @@ def test_weights_sum():
     test_obj.uv_size = 13
     test_weights = test_obj.uv_weights(1, 1)
     nt.assert_equal(test_weights.sum(), 1)
+
+
+@nt.raises(TypeError)
+def test_sum_uv():
+    """Test sum_uv errors if grid_uvw not called."""
+    test_obj = UVTest()
+    test_obj.uv_size = 51
+    test_obj.uv_delta = .5
+    test_obj.set_freqs(150e6)
+    test_uvw = np.zeros((3, 10)) + np.array([[14.6], [0], [0]])
+    test_obj.set_uvw_array(test_uvw)
+    test_obj.uvw_to_dict()
+    test_obj.sum_uv(test_obj.uvbins.keys()[0])
+
+
+def test_grid_uv():
+    """Test grid_uv sets up complex type."""
+    test_obj = UVTest()
+    test_obj.uv_delta = .5
+    test_obj.set_freqs(150e6)
+    test_uvw = np.zeros((3, 10)) + np.array([[14.6], [0], [0]])
+    test_obj.set_uvw_array(test_uvw)
+    test_obj.uvw_to_dict()
+    test_obj.grid_uvw()
+    nt.assert_true(isinstance(test_obj.uvf_cube.flatten()[0], complex))
