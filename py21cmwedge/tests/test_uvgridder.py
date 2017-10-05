@@ -288,7 +288,7 @@ def test_sum_uv():
     test_uvw = np.zeros((3, 10)) + np.array([[14.6], [0], [0]])
     test_obj.set_uvw_array(test_uvw)
     test_obj.uvw_to_dict()
-    test_obj.sum_uv(test_obj.uvbins.keys()[0])
+    test_obj.__sum_uv__(test_obj.uvbins.keys()[0])
 
 
 def test_grid_uv():

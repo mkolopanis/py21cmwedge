@@ -265,7 +265,7 @@ class UVGridder(object):
         weights /= np.sum(weights)
         return weights
 
-    def sum_uv(self, uv_key):
+    def __sum_uv__(self, uv_key):
         """Convert uvbin dictionary to a UV-plane."""
         uvbin = self.uvbins[uv_key]
         nbls = len(uvbin)
@@ -287,7 +287,7 @@ class UVGridder(object):
         self.uvf_cube = np.zeros(
             (self.freqs.size, self.uv_size, self.uv_size), dtype=np.complex)
         for uv_key in self.uvbins.keys():
-            self.sum_uv(uv_key)
+            self.__sum_uv__(uv_key)
         beam_array = self.get_uv_beam()
         # if only one beam was given, use that beam for all freqs
         if np.shape(beam_array)[0] < self.freqs.size:
