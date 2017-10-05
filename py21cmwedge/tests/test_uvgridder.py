@@ -230,7 +230,7 @@ def test_set_uv_beam():
     nt.assert_true(np.allclose(test_obj.get_uv_beam(), test_beam))
 
 
-def test_set_uv_beam_dims():
+def test_set_uv_beam_good_dims():
     """Test the set_uv_beam is same as input with ndims=3."""
     test_obj = UVTest()
     test_beam = np.zeros((1, 5, 5), dtype=np.complex)
@@ -240,7 +240,7 @@ def test_set_uv_beam_dims():
 
 
 @nt.raises(ValueError)
-def test_set_uv_beam_dims():
+def test_set_uv_beam_bad_dims():
     """Test the set_uv_beam raises exception for bad ndim."""
     test_obj = UVTest()
     test_beam = np.zeros((1, 1, 5, 5), dtype=np.complex)
