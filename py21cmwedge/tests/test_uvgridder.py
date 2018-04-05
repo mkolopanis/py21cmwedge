@@ -265,8 +265,8 @@ def test_observation():
     test_obj.set_n_obs(12)
     test_uvw = np.zeros((3, 100)) + np.array([[14.6], [0], [0]])
     test_obj.set_uvw_array(test_uvw)
-    new_uvw_array = test_obj.simulate_observation()
-    nt.assert_equal(np.shape(new_uvw_array)[-1], 12 * 100)
+    test_obj.simulate_observation()
+    nt.assert_equal(np.shape(test_obj.uvw_array)[-1], 12 * 100)
 
 
 def test_weights_sum():
