@@ -195,20 +195,15 @@ class UVGridder(object):
         if self.bl_len_max != 0:
             self.bl_len_min = np.min(norms[norms > 0])
 
-    def simulate_observation(self, t_int=None, n_obs=None, ra=None):
+    def simulate_observation(self):
         """Simulate the sky moving over the array."""
         # obnoxiously precise rotation speed of the Earth.
-        if t_int is None:
-            t_int = self.t_int
-        if n_obs is None:
-            n_obs = self.n_obs
-        if ra is None:
-            ra = self.latitude
-        hour_angles = np.arange(n_obs) * t_int * self.omega
+        ra = self.latitude
+        hour_angles = np.arange(self.n_obs) * self.t_int * self.omega
 
         # delta is hte this should be the latitude of the array
         # this is used to transform u,v,w to XYZ
-        delta = np.repeat(self.latitude, n_obs)
+        delta = np.repeat(self.latitude, self.n_obs)
         # delta_prime is the ra of the observed object
         # drift is used for an object which will move over zenith
         cH = np.cos(hour_angles)
@@ -221,21 +216,20 @@ class UVGridder(object):
             [cH, -sd * sH, sH * cd],
             [sr * sH, sr * sd * cH + cr * cd, -sr * cd * cH + cr * sd],
             [-cr * sH, -sd * cr * cH + sr * cd, cr * cd * cH + sr * sd]])
-        new_uvw_array = []
-        for uvw in self.uvw_array.T:
-            _uvw = np.einsum('jik,i', rotation_matrix, uvw)
-            new_uvw_array.extend(np.transpose(_uvw, [1, 0]))
-        new_uvw_array = np.array(new_uvw_array)
-        return new_uvw_array.T
+        # Using a tensordot here is faster than einsum
+        # Specifying the axes is like using two transposes then numpy.dot
+        new_uvw_array = np.tensordot(rotation_matrix, self.uvw_array,
+                                     axes=[[1], [0]])
+        new_uvw_array = new_uvw_array.reshape(new_uvw_array.shape[0], -1)
+        self.uvw_array = new_uvw_array
 
-    def uvw_to_dict(self, uvw_array=None):
+    def uvw_to_dict(self):
         """Convert UVWs array into a dictionary.
 
         Assumes W term is zero or very very small.
         Elemetns of dictionary are lists of bls keyed by uv lengths
         """
-        if uvw_array is None:
-            uvw_array = np.copy(self.uvw_array)
+        uvw_array = np.copy(self.uvw_array)
         for _u, _v in uvw_array[:2].T:
             if np.linalg.norm([_u, _v]) == 0:
                 continue
@@ -257,12 +251,15 @@ class UVGridder(object):
         _range = (np.arange(self.uv_size) - (self.uv_size - 1)/2.)
         _range *= self.uv_delta
         x, y = np.meshgrid(_range, _range)
+        x.shape += (1,)
+        y.shape += (1,)
         x = u - x
         y = v - y
         dists = np.linalg.norm([x, y], axis=0)
         weights = (1. - dists / self.wavelength_scale)
         weights = np.ma.masked_less_equal(weights, 0).filled(0)
-        weights /= np.sum(weights)
+        weights /= np.sum(weights, axis=(0, 1))
+        weights = np.transpose(weights, [2, 0, 1])
         return weights
 
     def __sum_uv__(self, uv_key):
@@ -274,9 +271,8 @@ class UVGridder(object):
         v /= self.wavelength
         _beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size),
                          dtype=np.complex)
-        for _fq in xrange(self.freqs.size):
-            # Create interpolation weights based on grid size and sampling
-            _beam[_fq] += self.uv_weights(u[_fq], v[_fq])
+        # Create interpolation weights based on grid size and sampling
+        _beam += self.uv_weights(u, v)
         self.uvf_cube += nbls * _beam
 
     def grid_uvw(self):
@@ -309,8 +305,6 @@ class UVGridder(object):
             self.uvbins = {}
             self.uvf_cube = None
         if self.n_obs > 1:
-            observed_uvw = self.simulate_observation()
-        else:
-            observed_uvw = self.uvw_array.copy()
-        self.uvw_to_dict(uvw_array=observed_uvw)
+            self.simulate_observation()
+        self.uvw_to_dict()
         self.grid_uvw()
