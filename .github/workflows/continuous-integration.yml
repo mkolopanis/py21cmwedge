@@ -44,9 +44,6 @@ jobs:
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
           bash miniconda.sh -b $HOME/miniconda
           export PATH="$HOME/miniconda/bin:$PATH"
-      - name: linux path setup
-        if: matrix.os == ubuntu.latest
-        run: export PATH="/usr/share/miniconda/bin:$PATH"
       - name: Setup Environment
         run: |
           conda config --set always_yes yes --set changeps1 no
