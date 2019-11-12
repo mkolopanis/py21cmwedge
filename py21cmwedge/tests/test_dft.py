@@ -15,7 +15,7 @@ def test_dft_idft():
     test_uv[9 + delta_coords[0], 9 + delta_coords[1]] += 1
     test_sky = dft.uv_to_hpx(test_uv, 32, .5)
     test_new_uv = dft.hpx_to_uv(test_sky, .5)
-    size_diff = (test_new_uv.shape[0] - test_uv.shape[0]) / 2
+    size_diff = (test_new_uv.shape[0] - test_uv.shape[0]) // 2
     test_uv = np.pad(test_uv, (size_diff, size_diff), 'edge')
     center = (test_new_uv.shape[0] - 1) / 2
     nt.assert_equal(test_new_uv[center + delta_coords[0],
@@ -30,7 +30,7 @@ def test_rms():
     test_uv[9 + delta_coords[0], 9 + delta_coords[1]] += 1
     test_sky = dft.uv_to_hpx(test_uv, 32, .5)
     test_new_uv = dft.hpx_to_uv(test_sky, .5)
-    size_diff = (test_new_uv.shape[0] - test_uv.shape[0]) / 2
+    size_diff = (test_new_uv.shape[0] - test_uv.shape[0]) // 2
     test_uv = np.pad(test_uv, (size_diff, size_diff), 'edge')
     rms = np.sqrt(np.mean((np.abs(test_uv) - np.abs(test_new_uv))**2))
     nt.assert_less(rms, threshold)
