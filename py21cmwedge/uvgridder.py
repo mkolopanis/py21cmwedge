@@ -4,7 +4,7 @@ from astropy import constants as const
 from scipy.signal import fftconvolve
 from py21cmwedge import dft
 import healpy as hp
-from six import range
+from six.moves import range
 
 
 class UVGridder(object):

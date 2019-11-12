@@ -1,7 +1,7 @@
 """Beam Handling and DFT Modules."""
 import healpy as hp
 import numpy as np
-from six import range
+from six.moves import range
 
 
 def hpx_to_uv(map_in, uv_delta):
