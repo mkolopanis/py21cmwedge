@@ -1,10 +1,10 @@
 """Primary UV Gridder."""
 import numpy as np
-import os
 from astropy import constants as const
 from scipy.signal import fftconvolve
-from py21cmwedge import cosmo, dft
+from py21cmwedge import dft
 import healpy as hp
+from six import range
 
 
 class UVGridder(object):
@@ -109,11 +109,11 @@ class UVGridder(object):
         """Return simple 2-d Gaussian."""
         _range = np.arange(self.uv_size)
         y, x = np.meshgrid(_range, _range)
-        cen = (self.uv_size-1)/2.  # correction for centering
+        cen = (self.uv_size - 1) / 2.  # correction for centering
         y = -1 * y + cen
         x = x - cen
         dist = np.linalg.norm([x, y], axis=0)
-        g = np.exp(- dist**2/(2.*self.sigma_beam**2))
+        g = np.exp(- dist**2 / (2. * self.sigma_beam**2))
         g /= g.sum()
         return g
 
@@ -134,9 +134,10 @@ class UVGridder(object):
         for beam in beam_in:
             # check that beam is healpix array:
             if not hp.isnpixok(beam.size):
-                raise ValueError('Input image is not in Healpix format. ' +
-                                 'Input image only has {0}'.format(beam.size) +
-                                 ' pixels')
+                raise ValueError('Input image is not in Healpix format. '
+                                 'Input image only has {0}'
+                                 ' pixels'.format(beam.size)
+                                 )
             else:
                 # make sure beam integrate to unity:
                 _beam = dft.hpx_to_uv(beam, self.uv_delta)
@@ -248,7 +249,7 @@ class UVGridder(object):
         #     weights = 1. - (np.abs(uv - grid)/np.diff(grid)[0])**2
         #     weights = np.exp( - (uv - grid)**2/(2*np.diff(grid)[0]**2))
         #     weights = np.exp( - abs(uv - grid)/(np.diff(grid)[0]))
-        _range = (np.arange(self.uv_size) - (self.uv_size - 1)/2.)
+        _range = (np.arange(self.uv_size) - (self.uv_size - 1) / 2.)
         _range *= self.uv_delta
         x, y = np.meshgrid(_range, _range)
         x.shape += (1,)
@@ -279,7 +280,7 @@ class UVGridder(object):
         """Create UV coverage from object data."""
         self.uv_size = int(np.round(self.bl_len_max
                                     / self.wavelength
-                                    / self.uv_delta).max()*1.1) * 2 + 5
+                                    / self.uv_delta).max() * 1.1) * 2 + 5
         self.uvf_cube = np.zeros(
             (self.freqs.size, self.uv_size, self.uv_size), dtype=np.complex)
         for uv_key in self.uvbins.keys():
@@ -288,7 +289,7 @@ class UVGridder(object):
         # if only one beam was given, use that beam for all freqs
         if np.shape(beam_array)[0] < self.freqs.size:
             beam_array = np.tile(beam_array[0], (self.freqs.size, 1, 1))
-        for _fq in xrange(self.freqs.size):
+        for _fq in range(self.freqs.size):
             beam = beam_array[_fq]
             self.uvf_cube[_fq] = fftconvolve(self.uvf_cube[_fq],
                                              beam, mode='same')

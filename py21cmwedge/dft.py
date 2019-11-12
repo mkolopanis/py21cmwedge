@@ -1,6 +1,7 @@
 """Beam Handling and DFT Modules."""
 import healpy as hp
 import numpy as np
+from six import range
 
 
 def hpx_to_uv(map_in, uv_delta):
@@ -11,9 +12,9 @@ def hpx_to_uv(map_in, uv_delta):
     """
     # Get info of the input map
     nside = hp.get_nside(map_in)
-    pix_size = 1./hp.nside2resol(nside)  # 1./pix_resol to get wavelengths
+    pix_size = 1. / hp.nside2resol(nside)  # 1./pix_resol to get wavelengths
     # Only create a grid as large as the +/- pixel_size/2
-    uv_size = np.ceil(pix_size/2.)  # in wavelengths
+    uv_size = np.ceil(pix_size / 2.)  # in wavelengths
     # Cut the size in half so only extends the amount of 1 Healpix
     # pixel in wavelengths
     # The corners will be slightly longer but that should be okay.
@@ -26,7 +27,7 @@ def hpx_to_uv(map_in, uv_delta):
         uv_size += 1
     # Create a the _u,_v grid and baselines vectors
     _range = np.arange(uv_size).astype(np.float64)
-    center = (uv_size - 1)/2.
+    center = (uv_size - 1) / 2.
     _range -= center
     _range *= uv_delta
     _u, _v = np.meshgrid(_range, _range)
@@ -39,7 +40,7 @@ def hpx_to_uv(map_in, uv_delta):
     pix_above_horizon = np.where(_xyz[2] >= 0)[0]
     s_ = np.array([_xyz[0], _xyz[1]])  # stack x,y into array
 
-    for cnt in xrange(_u.ravel().size):
+    for cnt in range(_u.ravel().size):
         __u, __v = _u.ravel()[cnt], _v.ravel()[cnt]
         b_dot_s = np.einsum('i,i...', [__u, __v], s_)
         phases = np.exp(-2j * np.pi * b_dot_s[pix_above_horizon])
@@ -56,7 +57,7 @@ def uv_to_hpx(uv_beam, nside, uv_delta):
     """
     uv_size = uv_beam.shape[0]
     _range = np.arange(uv_size).astype(np.float64)
-    center = (uv_size - 1)/2.
+    center = (uv_size - 1) / 2.
     _range -= center
     _range *= uv_delta
     _u, _v = np.meshgrid(_range, _range)

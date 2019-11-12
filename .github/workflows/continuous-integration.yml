@@ -36,7 +36,7 @@ jobs:
           conda update -q conda
           conda info -a
       - run: |
-          conda create -q -n tests python=$ ${{ matrix.python-version }} numpy scipy astropy nose pip
+          conda create -q -n tests python=$ ${{ matrix.python-version }} numpy scipy astropy nose pip six
           conda install -c conda-forge healpy -n tests
       - run: |
           source /usr/share/miniconda/bin/activate tests
