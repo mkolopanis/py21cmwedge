@@ -9,15 +9,16 @@ jobs:
      - uses: actions/checkout@master
        with:
          fetch-depth: 1
-     - run: |
+     - name: Setup Environment
+       run: |
          conda config --set always_yes yes --set changeps1 no
          conda update -q conda
-     - run: |
          conda create -n tests
          conda install pycodestyle -n tests
          conda info -a
          conda list -n tests
-     - run: |
+     - name: Linting
+       run: |
          source /usr/share/miniconda/bin/activate tests
          pycodestyle --ignore=E501,W503 py21cmwedge
   test:
@@ -25,19 +26,25 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-16.04, ubuntu-18.04] #, macos-latest]
+        os: [ubuntu-16.04, ubuntu-18.04, macos-latest]
         python-version: [2.7, 3.6, 3.7]
     steps:
       - uses: actions/checkout@master
         with:
           fetch-depth: 1
-      - run: |
+      - name: Macos Check and Conda Install
+        if: ${{ matrix.os }} == 'macos-latest'
+        run: |
+          wget https://repo.continuum.io/minicowget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;nda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+          bash miniconda.sh -b -p /usr/share/miniconda
+      - name: Setup env
+        run: |
           conda config --set always_yes yes --set changeps1 no
           conda update -q conda
           conda info -a
-      - run: |
           conda create -q -n tests python=${{ matrix.python-version }} numpy scipy astropy nose pip six
           conda install -c conda-forge healpy -n tests
-      - run: |
           source /usr/share/miniconda/bin/activate tests
-          nosetests py21cmwedge --with-coverage --cover-package=py21cmwedge
+          pip install coveralls
+      - name: Run Tests
+        run: nosetests py21cmwedge --with-coverage --cover-package=py21cmwedge
