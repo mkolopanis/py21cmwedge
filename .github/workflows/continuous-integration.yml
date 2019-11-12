@@ -1,4 +1,4 @@
-name: run tests
+name: Run Linux Tests
 on: [push, pull_request]
 
 jobs:
@@ -26,24 +26,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         python-version: [2.7, 3.6, 3.7]
     steps:
       - uses: actions/checkout@master
         with:
           fetch-depth: 1
-      - name: Get Miniconda
-        if: matrix.python-version < 3
-        run: |
-          wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-          bash miniconda.sh -b -p $HOME/miniconda
-          export PATH="$HOME/miniconda/bin:$PATH"
-      - name: Get Miniconda
-        if: matrix.python-version > 3
-        run: |
-          wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-          bash miniconda.sh -b -p $HOME/miniconda
-          export PATH="$HOME/miniconda/bin:$PATH"
       - name: Setup Environment
         run: |
           conda config --set always_yes yes --set changeps1 no
@@ -51,7 +39,7 @@ jobs:
           conda info -a
           conda create -q -n tests python=${{ matrix.python-version }} numpy scipy astropy nose pip six
           conda install -c conda-forge healpy -n tests
-          source activate tests
+          source /usr/share/miniconda/bin/activate tests
           pip install coveralls
       - name: Run Tests
         run: nosetests py21cmwedge --with-coverage --cover-package=py21cmwedge
