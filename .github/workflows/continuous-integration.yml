@@ -1,0 +1,50 @@
+name: run tests
+on: [push, pull_request]
+
+jobs:
+  linter:
+    name: Linter
+    runs-on: ubuntu-latest
+    steps:
+     - uses: actions/checkout@master
+       with:
+         fetch-depth: 1
+     - run: pwd
+     - run: ls -l
+     - run: ls -l /usr/share/miniconda/bin
+     - run: which conda
+     - run: export PATH="/usr/share/miniconda/bin:$PATH"
+     - run: |
+         conda config --set always_yes yes --set changeps1 no
+         conda update -q conda
+     - run: |
+         conda create -n tests
+         conda install pycodestyle -n tests
+         conda info -a
+         conda list -n tests
+     - run: |
+         source /usr/share/miniconda/bin/activate tests
+         pycodestyle --ignore=E501,W503 py21cmwedge
+  # test:
+  #   name: Testing
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-16.04, ubuntu-18.04, macos-latest]
+  #       python-version: ['2.x', '3.x']
+  #   steps:
+  #     - uses: actions/checkout@master
+  #       with:
+  #         fetch-depth: 1
+  #     - uses: actions/setup-python@master
+  #       with:
+  #          python-version: ${{ matrix.python-version }}
+  #     - run: |
+  #         conda config --set always_yes yes --set changeps1 no
+  #         conda update -q conda
+  #         conda info -a
+  #         conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy astropy nose pip
+  #         conda activate test-environment
+  #         conda install -c conda-forge healpy
+  #         pip install coveralls
+  #         nosetests py21cmwedge --with-coverage --cover-package=py21cmwedge
