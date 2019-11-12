@@ -17,7 +17,7 @@ def test_dft_idft():
     test_new_uv = dft.hpx_to_uv(test_sky, .5)
     size_diff = (test_new_uv.shape[0] - test_uv.shape[0]) // 2
     test_uv = np.pad(test_uv, (size_diff, size_diff), 'edge')
-    center = (test_new_uv.shape[0] - 1) / 2
+    center = (test_new_uv.shape[0] - 1) // 2
     nt.assert_equal(test_new_uv[center + delta_coords[0],
                                 center + delta_coords[1]], 1)
 
