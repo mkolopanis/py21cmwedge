@@ -267,7 +267,7 @@ class UVGridder(object):
         """Convert uvbin dictionary to a UV-plane."""
         uvbin = self.uvbins[uv_key]
         nbls = len(uvbin)
-        u, v = np.array(map(float, uv_key.split(',')))
+        u, v = np.array(list(map(float, uv_key.split(','))))
         u /= self.wavelength
         v /= self.wavelength
         _beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size),
