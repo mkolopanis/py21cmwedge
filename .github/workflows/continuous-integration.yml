@@ -5,6 +5,8 @@ jobs:
   linter:
     name: Linter
     runs-on: ubuntu-latest
+    env:
+      ENV_NAME: linter
     steps:
      - uses: actions/checkout@master
        with:
@@ -13,15 +15,17 @@ jobs:
        run: |
          conda config --set always_yes yes --set changeps1 no
          conda update -q conda
-         conda create -n tests
-         conda install pycodestyle -n linter
+         conda create -n $ENV_NAME
+         conda install pycodestyle -n $ENV_NAME
          conda info -a
-         conda list -n tests
+         conda list -n $ENV_NAME
      - name: Linting
        run: |
-         source /usr/share/miniconda/bin/activate linter
+         source /usr/share/miniconda/bin/activate $ENV_NAME
          pycodestyle --ignore=E501,W503 py21cmwedge
   test:
+    env:
+      ENV_NAME: test
     name: Testing
     needs: Linter
     runs-on: ${{ matrix.os }}
@@ -55,11 +59,14 @@ jobs:
           conda config --set always_yes yes --set changeps1 no
           conda update -q conda
           conda info -a
-          conda create -q -n tests python=${{ matrix.python-version }} numpy scipy astropy nose pip six
-          conda install -c conda-forge healpy -n tests
-          source activate tests
+          conda create -q -n $ENV_NAME python=${{ matrix.python-version }}
+          conda install -n $ENV_NAME numpy scipy astropy nose pip six
+          conda install -c conda-forge healpy -n $ENV_NAME
+          source activate $ENV_NAME
           pip install coveralls
+          conda list -n $ENV_NAME
+
       - name: Run Tests
         run: |
-          source activate tests
+          source activate $ENV_NAME
           nosetests py21cmwedge --with-coverage --cover-package=py21cmwedge
