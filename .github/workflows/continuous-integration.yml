@@ -38,22 +38,26 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O $HOME/miniconda.sh;
+          bash $HOME/miniconda.sh -b -p $HOME/miniconda
 
       - name: Get Miniconda Linux
         if: matrix.os == 'ubuntu-latest'
         run: |
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $HOME/miniconda.sh;
+          bash $HOME/miniconda.sh -b -p $HOME/miniconda
 
       - name: Setup Environment
         run: |
-          bash $HOME/miniconda.sh -b -p $HOME/miniconda
           export PATH="$HOME/miniconda/bin:$PATH"
+          hash -r
+          which conda
+          which -a conda
           conda config --set always_yes yes --set changeps1 no
           conda update -q conda
           conda info -a
           conda create -q -n tests python=${{ matrix.python-version }} numpy scipy astropy nose pip six
           conda install -c conda-forge healpy -n tests
-          source /usr/share/miniconda/bin/activate tests
+          source activate tests
           pip install coveralls
       - name: Run Tests
         run: |
