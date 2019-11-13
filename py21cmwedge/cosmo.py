@@ -13,7 +13,7 @@ omega_curv = 1 - omega_lambda - omega_matter
 
 # other constants
 c = const.c.to('m/s').value
-ckm = c/1000.  # km/s
+ckm = c / 1000.  # km/s
 f21 = 1.420e9  # GHz
 
 
@@ -21,16 +21,16 @@ f21 = 1.420e9  # GHz
 def Ez(redshift=None, omega_matter=omega_matter,
        omega_lambda=omega_lambda, omega_curv=omega_curv):
     """Compute co-moving distance by integrating this function."""
-    return np.sqrt(omega_matter * (1. + redshift)**3 +
-                   omega_curv * (1. + redshift)**2 + omega_lambda)
+    return np.sqrt(omega_matter * (1. + redshift)**3
+                   + omega_curv * (1. + redshift)**2 + omega_lambda)
 
 
 def comoving_distance(redshift=None, mega_matter=omega_matter,
                       omega_lambda=omega_lambda, omega_curv=omega_curv):
-        """Calculate comoving distance for a Lambda_CDM cosmology."""
-        hubble_dist = 3e3 / hubble_param
-        integral, err = quad(lambda z: 1/Ez(z), 0., redshift)
-        return hubble_dist * integral
+    """Calculate comoving distance for a Lambda_CDM cosmology."""
+    hubble_dist = 3e3 / hubble_param
+    integral, err = quad(lambda z: 1 / Ez(z), 0., redshift)
+    return hubble_dist * integral
 
 
 def kperp2u(kperp, z):
@@ -45,7 +45,7 @@ def u2kperp(u, z):
 
 def eta2kpar(eta, z):
     """Convert delay eta to k_parallel."""
-    return eta * 2 * np.pi * Ho * f21 / ckm * Ez(z) / (1+z)**2
+    return eta * 2 * np.pi * Ho * f21 / ckm * Ez(z) / (1 + z)**2
 
 
 def kpar2eta(kpar, z):

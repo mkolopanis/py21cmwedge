@@ -3,14 +3,13 @@ from setuptools import setup
 import glob
 import os.path as op
 from os import listdir
-import sys
 __version__ = '0.0.2'
 
-data_files = [op.join('./py21cmwedge/data',f)
+data_files = [op.join('./py21cmwedge/data', f)
               for f in listdir('./py21cmwedge/data')
               if op.isfile(op.join('./py21cmwedge/data', f))]
 
-test_files = [op.join('./py21cmwedge/tests/data',f)
+test_files = [op.join('./py21cmwedge/tests/data', f)
               for f in listdir('./py21cmwedge/tests/data')
               if op.isfile(op.join('./py21cmwedge/tests/data', f))]
 
@@ -29,9 +28,9 @@ setup_args = {
     'version': __version__,
     'package_data': {'py21cmwedge': all_files},
     'install_requires': ['numpy>1.10', 'scipy', 'astropy>1.2', 'nose',
-                         'healpy'],
+                         'healpy', 'six'],
     'test_suite': 'nose'
 }
 
 if __name__ == '__main__':
-    apply(setup, (), setup_args)
+    setup(**setup_args)

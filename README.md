@@ -1,5 +1,6 @@
 # py21cmwedge
 
+![](https://github.com/mkolopanis/py21cmwedge/workflows/Run%20Tests/badge.svg)
 [![Build Status](https://travis-ci.org/mkolopanis/py21cmwedge.svg?branch=master)](https://travis-ci.org/mkolopanis/py21cmwedge)
 [![Coverage Status](https://img.shields.io/coveralls/mkolopanis/py21cmwedge.svg?style=flat)](https://coveralls.io/r/mkolopanis/py21cmwedge)
 
@@ -21,11 +22,11 @@ A list of the notebooks and what information they include:
    An analysis of the kernel of a Healpix Pixel when perfoming a DFT from the sky to the (u,v) plane.
 
 * Beam_Gridding
-   
+
    A comparison of how this package and FHD grid the Beam, a single baseline and two baselines onto the UV plane.
-   
+
 * Rotation_Synthesis
-   
+
    A demonstration of how rotation synthesis is handled at the [u,v,w] level with this package
 
 *  UVF_Uniform_Comparion

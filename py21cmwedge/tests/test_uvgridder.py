@@ -142,7 +142,7 @@ def test_uvbin_is_dict():
     """Test uvbins get saved as dict."""
     test_obj = UVTest()
     test_uvw = np.zeros((3, 200)) + np.array([[14.6], [0], [0]])
-    test_uvbin = {"14.600,0.000": 200*["14.600,0.000"]}
+    test_uvbin = {"14.600,0.000": 200 * ["14.600,0.000"]}
     test_obj.set_uvw_array(test_uvw)
     test_obj.uvw_to_dict()
     nt.assert_equal(test_obj.uvbins, test_uvbin)
@@ -187,7 +187,7 @@ def test_set_latitude():
     """Test setting latitude of array."""
     test_obj = UVTest()
     test_lat = -40.377
-    test_obj.set_latitude(-40.377 * np.pi/180)
+    test_obj.set_latitude(-40.377 * np.pi / 180)
     nt.assert_equal(test_obj.latitude, test_lat * np.pi / 180)
 
 
@@ -206,7 +206,7 @@ def test_set_beam_type():
     test_obj.set_fwhm(test_fwhm)
     test_obj.uv_size = 13
     # put a delta function on the sky
-    test_beam = np.zeros(12*128l**2)
+    test_beam = np.zeros(12 * 128**2)
     test_beam[0] += 1
     test_obj.set_beam(test_beam)
     nt.assert_true(isinstance(test_obj.get_uv_beam().flatten()[0], complex))
@@ -216,7 +216,7 @@ def test_set_beam_type():
 def test_bad_beam_pix():
     """Test that module refuses beams of the wrong size."""
     test_obj = UVTest()
-    test_beam = np.zeros(12 * 128l**2 - 1)
+    test_beam = np.zeros(12 * 128**2 - 1)
     test_obj.set_beam(test_beam)
     test_obj.set_uv_beam(test_beam)
 
