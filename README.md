@@ -1,6 +1,6 @@
 # py21cmwedge
 
-![](https://github.com/mkolopanis/py21cmwedge/workflows/Run%20Tests/badge.svg)
+[![](https://github.com/mkolopanis/py21cmwedge/workflows/Run%20Tests/badge.svg?branch=master)](https://github.com/mkolopanis/py21cmwedge/actions/)
 [![Build Status](https://travis-ci.org/mkolopanis/py21cmwedge.svg?branch=master)](https://travis-ci.org/mkolopanis/py21cmwedge)
 [![Coverage Status](https://img.shields.io/coveralls/mkolopanis/py21cmwedge.svg?style=flat)](https://coveralls.io/r/mkolopanis/py21cmwedge)
 
