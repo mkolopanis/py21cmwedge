@@ -1,4 +1,4 @@
-name: Run Linux Tests
+name: Run Tests
 on: [push, pull_request]
 
 jobs:
@@ -34,11 +34,12 @@ jobs:
       - uses: actions/checkout@master
         with:
           fetch-depth: 1
-      - name: Get Miniconda
+      - name: Get Miniconda MacOSX
         if: matrix.os == macos-latest
         run: |
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
 
+      - name: Get Miniconda Linux
         if: matrix.os == ubuntu-latest
         run: |
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
