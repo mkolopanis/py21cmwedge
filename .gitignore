@@ -60,3 +60,9 @@ target/
 # IPYNB checkpoints
 .ipynb_checkpoints/
 
+
+.vscode/
+
+src/py21cmwedge/version.py
+
+uv.lock

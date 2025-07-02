@@ -1,0 +1,25 @@
+[build-system]
+ requires      = [ "hatchling", "hatch-vcs" ]
+ build-backend = "hatchling.build"
+
+
+[project]
+ dependencies    = [ "numpy>=1.10", "scipy", "astropy>1.2", "healpy" ]
+ name            = "py21cmwedge"
+ dynamic         = [ "version" ]
+ authors         = [ { name = "Matthew Kolopanis" } ]
+ description     = "A utility to predict the theoretical wedge leakage from a radio intereferometric array"
+ requires-python = ">=3.8"
+ license         = { text = "BSD" }
+
+
+ [project.optional-dependencies]
+  dev = [ "pytest>=8" ]
+
+[tool.hatch]
+ version.source               = "vcs"
+ version.raw-options          = { root = "." }
+ build.hooks.vcs.version-file = "src/py21cmwedge/version.py"
+
+ [tool.hatch.build.targets.wheel]
+  packages = [ "src/py21cmwedge" ]
