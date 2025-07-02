@@ -4,12 +4,12 @@
 
 
 [project]
- dependencies    = [ "numpy>=1.10", "scipy", "astropy>1.2", "healpy" ]
+ dependencies    = [ "numpy>=2", "scipy>=1.16", "astropy>=7", "healpy>=1.18" ]
  name            = "py21cmwedge"
  dynamic         = [ "version" ]
  authors         = [ { name = "Matthew Kolopanis" } ]
  description     = "A utility to predict the theoretical wedge leakage from a radio intereferometric array"
- requires-python = ">=3.8"
+ requires-python = ">=3.11"
  license         = { text = "BSD" }
 
 
