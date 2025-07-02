@@ -33,7 +33,13 @@ A list of the notebooks and what information they include:
 
 
 # Installation
-## Dependencies
+
+## Installing py21cmwedge
+The reccommended python packaging manager to use with this repository is [uv](https://docs.astral.sh/uv/) via `uv pip install .`
+
+However this package is compliant and installable with `pip` via `pip install .`
+
+## Dependencies for conda users
 For anaconda users, prerequisites can be installed using conda to install astropy, numpy and scipy and conda-forge
 for healpy (`conda install -c conda-forge healpy`).
 
@@ -43,9 +49,3 @@ This package requires the following packages :
 * scipy >= 1.16
 * astropy >= 7
 * healpy >= 1.18
-
-## Install py21cmwedge
-After cloning this repository, installation can be accomplished by executing
-one of the following inside the py21cmwedge directory
-
-`pip install .`
