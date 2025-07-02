@@ -16,6 +16,9 @@
  [project.optional-dependencies]
   dev = [ "pytest>=8" ]
 
+[tool.pytest.ini_options]
+ addopts = [ "--import-mode=importlib" ]
+
 [tool.hatch]
  version.source               = "vcs"
  version.raw-options          = { root = "." }

@@ -5,7 +5,7 @@ import numpy as np
 from astropy import constants as const
 from scipy.signal import fftconvolve
 
-from py21cmwedge import dft
+from . import dft
 
 
 class UVGridder(object):
