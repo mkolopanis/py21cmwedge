@@ -1,13 +1,11 @@
 # py21cmwedge
-
-[![](https://github.com/mkolopanis/py21cmwedge/workflows/Run%20Tests/badge.svg?branch=master)](https://github.com/mkolopanis/py21cmwedge/actions/)
-[![Build Status](https://travis-ci.org/mkolopanis/py21cmwedge.svg?branch=master)](https://travis-ci.org/mkolopanis/py21cmwedge)
+[![Run Tests](https://github.com/mkolopanis/py21cmwedge/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/mkolopanis/py21cmwedge/actions/workflows/continuous-integration.yml)
 [![Coverage Status](https://img.shields.io/coveralls/mkolopanis/py21cmwedge.svg?style=flat)](https://coveralls.io/r/mkolopanis/py21cmwedge)
 
 py21cmwedge allows for quick computation of the footprint of a radio array in the (u,v) plane. This is especially useful to
 determine the amount of foreground leakage in image based power spectrum analysis due to "Multi-Baseline Mode Mixing."
 
-This package's outputs can compars directly to  FHD ([Fast Holographic Deconvolution](https://www.github.com/EorImaging/FHD))
+This package's outputs can compares directly to  FHD ([Fast Holographic Deconvolution](https://www.github.com/EorImaging/FHD))
 and Eppsilon ([error propagated power spectrum with interleaved observed noise](https://github.com/EoRImaging/eppsilon))
 
 # Package Details
@@ -19,7 +17,7 @@ A list of the notebooks and what information they include:
 
 * DFT_Kernel_Effects
 
-   An analysis of the kernel of a Healpix Pixel when perfoming a DFT from the sky to the (u,v) plane.
+   An analysis of the kernel of a Healpix Pixel when performing a DFT from the sky to the (u,v) plane.
 
 * Beam_Gridding
 
@@ -29,9 +27,9 @@ A list of the notebooks and what information they include:
 
    A demonstration of how rotation synthesis is handled at the [u,v,w] level with this package
 
-*  UVF_Uniform_Comparion
+*  UVF_Uniform_Comparison
 
-   A comparison of how this pacakge and FHD+Eppsilon grid entire arrays in uniform weighting
+   A comparison of how this package and FHD+Eppsilon grid entire arrays in uniform weighting
 
 
 # Installation
@@ -41,14 +39,13 @@ for healpy (`conda install -c conda-forge healpy`).
 
 This package requires the following packages :
 
-* numpy > 1.10
-* scipy
-* astropy > 1.2
-* healpy
-* nose
+* numpy > 2
+* scipy >= 1.16
+* astropy >= 7
+* healpy >= 1.18
 
 ## Install py21cmwedge
 After cloning this repository, installation can be accomplished by executing
 one of the following inside the py21cmwedge directory
 
-`pip install .` or `python setup.py install `
+`pip install .`
