@@ -5,24 +5,13 @@ jobs:
   linter:
     name: Linter
     runs-on: ubuntu-latest
-    env:
-      ENV_NAME: linter
     steps:
-     - uses: actions/checkout@master
+     - uses: actions/checkout@v4
        with:
          fetch-depth: 1
-     - name: Setup Environment
-       run: |
-         conda config --set always_yes yes --set changeps1 no
-         conda update -q conda
-         conda create -n $ENV_NAME
-         conda install pycodestyle -n $ENV_NAME
-         conda info -a
-         conda list -n $ENV_NAME
-     - name: Linting
-       run: |
-         source /usr/share/miniconda/bin/activate $ENV_NAME
-         pycodestyle --ignore=E501,W503 py21cmwedge
+     - uses: astral-sh/ruff-action@v3
+       with:
+         src: "./src"
   test:
     env:
       ENV_NAME: test
@@ -33,41 +22,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [2.7, 3.6, 3.7]
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      - name: Get Miniconda MacOSX
-        if: matrix.os == 'macos-latest'
-        run: |
-          wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O $HOME/miniconda.sh;
-          bash $HOME/miniconda.sh -b -p $HOME/miniconda
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python-version }}
 
-      - name: Get Miniconda Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $HOME/miniconda.sh;
-          bash $HOME/miniconda.sh -b -p $HOME/miniconda
-
-      - name: Setup Environment
-        run: |
-          export PATH="$HOME/miniconda/bin:$PATH"
-          hash -r
-          which conda
-          which -a conda
-          conda config --set always_yes yes --set changeps1 no
-          conda update -q conda
-          conda info -a
-          conda create -q -n $ENV_NAME python=${{ matrix.python-version }}
-          conda install -n $ENV_NAME numpy scipy astropy nose pip six
-          conda install -c conda-forge healpy -n $ENV_NAME
-          source activate $ENV_NAME
-          pip install coveralls
-          conda list -n $ENV_NAME
-
-      - name: Run Tests
-        run: |
-          export PATH="$HOME/miniconda/bin:$PATH"
-          source activate $ENV_NAME
-          nosetests py21cmwedge --with-coverage --cover-package=py21cmwedge
+      - name: Test with python ${{ matrix.python-version }}
+        run: uv run --frozen pytest
