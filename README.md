@@ -1,6 +1,6 @@
 # py21cmwedge
 [![Run Tests](https://github.com/mkolopanis/py21cmwedge/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/mkolopanis/py21cmwedge/actions/workflows/continuous-integration.yml)
-[![Coverage Status](https://img.shields.io/coveralls/mkolopanis/py21cmwedge.svg?style=flat)](https://coveralls.io/r/mkolopanis/py21cmwedge)
+[![codecov](https://codecov.io/gh/mkolopanis/py21cmwedge/graph/badge.svg?token=vxXsXrWa2j)](https://codecov.io/gh/mkolopanis/py21cmwedge)
 
 py21cmwedge allows for quick computation of the footprint of a radio array in the (u,v) plane. This is especially useful to
 determine the amount of foreground leakage in image based power spectrum analysis due to "Multi-Baseline Mode Mixing."
