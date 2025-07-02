@@ -65,4 +65,3 @@ target/
 
 src/py21cmwedge/version.py
 
-uv.lock
