@@ -1,4 +1,4 @@
 """init file for py21cmwedge."""
-from .uvgridder import *
-from . import cosmo
-from . import dft
+
+from . import cosmo, dft  # noqa: F401
+from .uvgridder import UVGridder  # noqa: F401

@@ -1,13 +1,13 @@
 [run]
 omit =
-    */tests/*
-    */tests/data/*
+    ./tests/*
+    ./tests/data/*
     */notebooks/*
     */data/*
 
 [report]
 omit =
-    */tests/*
-    */tests/data/*
+    ./tests/*
+    ./tests/data/*
     */notebooks/*
     */data/*
