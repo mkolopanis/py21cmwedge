@@ -1,10 +1,11 @@
 """Primary UV Gridder."""
+
+import healpy as hp
 import numpy as np
 from astropy import constants as const
 from scipy.signal import fftconvolve
+
 from py21cmwedge import dft
-import healpy as hp
-from six.moves import range
 
 
 class UVGridder(object):
@@ -16,19 +17,19 @@ class UVGridder(object):
         self.uv_sum = None
         self.uvbins = {}
         self.bl_len_max = 0
-        self.bl_len_min = np.Inf
+        self.bl_len_min = np.inf
         self.beam = None
         self.uvw_array = None
         self.antpos = None
         self.uvf_cube = None
         self.uv_size = None
         self.uv_delta = 1  # default 1 wavelength pixels
-        self.wavelength_scale = 2.  # Max wavelength scale of antenna
+        self.wavelength_scale = 2.0  # Max wavelength scale of antenna
         self.fwhm = 1.0
-        self.sigma_beam = self.fwhm / np.sqrt(4. * np.log(2.))
+        self.sigma_beam = self.fwhm / np.sqrt(4.0 * np.log(2.0))
         self.uv_beam_array = None
         self.beam_sky = None
-        self.omega = 2 * np.pi / (23. * 3600. + 56 * 60. + 4.09)
+        self.omega = 2 * np.pi / (23.0 * 3600.0 + 56 * 60.0 + 4.09)
         self.t_int = 0  # integration or snapshot time of array
         self.latitude = 0  # set default array at the equator
         self.ra = None
@@ -93,12 +94,12 @@ class UVGridder(object):
         else:
             freq = np.asarray(list(freq))
         self.freqs = freq
-        self.wavelength = const.c.to('m/s').value / self.freqs
+        self.wavelength = const.c.to("m/s").value / self.freqs
 
     def set_fwhm(self, fwhm):
         """Set the FWHM of a Gaussian Beam."""
         self.fwhm = fwhm
-        self.sigma_beam = self.fwhm / np.sqrt(4. * np.log(2))
+        self.sigma_beam = self.fwhm / np.sqrt(4.0 * np.log(2))
 
     def set_sigma_beam(self, sigma):
         """Manually Set Gaussian standard deviation for Beam."""
@@ -109,11 +110,11 @@ class UVGridder(object):
         """Return simple 2-d Gaussian."""
         _range = np.arange(self.uv_size)
         y, x = np.meshgrid(_range, _range)
-        cen = (self.uv_size - 1) / 2.  # correction for centering
+        cen = (self.uv_size - 1) / 2.0  # correction for centering
         y = -1 * y + cen
         x = x - cen
         dist = np.linalg.norm([x, y], axis=0)
-        g = np.exp(- dist**2 / (2. * self.sigma_beam**2))
+        g = np.exp(-(dist**2) / (2.0 * self.sigma_beam**2))
         g /= g.sum()
         return g
 
@@ -134,10 +135,11 @@ class UVGridder(object):
         for beam in beam_in:
             # check that beam is healpix array:
             if not hp.isnpixok(beam.size):
-                raise ValueError('Input image is not in Healpix format. '
-                                 'Input image only has {0}'
-                                 ' pixels'.format(beam.size)
-                                 )
+                raise ValueError(
+                    "Input image is not in Healpix format. "
+                    "Input image only has {0}"
+                    " pixels".format(beam.size)
+                )
             else:
                 # make sure beam integrate to unity:
                 _beam = dft.hpx_to_uv(beam, self.uv_delta)
@@ -162,8 +164,10 @@ class UVGridder(object):
         elif np.ndim(beam_in) == 3:
             self.uv_beam_array = np.array(beam_in)
         else:
-            raise ValueError("Beams of the shape {0}".format(np.shape(beam_in))
-                             + " are not supported")
+            raise ValueError(
+                "Beams of the shape {0}".format(np.shape(beam_in))
+                + " are not supported"
+            )
 
     def get_uv_beam(self):
         """Return beam in the UV plane.
@@ -213,14 +217,16 @@ class UVGridder(object):
         sd = np.sin(delta)
         cr = np.cos(ra)
         sr = np.sin(ra)
-        rotation_matrix = np.array([
-            [cH, -sd * sH, sH * cd],
-            [sr * sH, sr * sd * cH + cr * cd, -sr * cd * cH + cr * sd],
-            [-cr * sH, -sd * cr * cH + sr * cd, cr * cd * cH + sr * sd]])
+        rotation_matrix = np.array(
+            [
+                [cH, -sd * sH, sH * cd],
+                [sr * sH, sr * sd * cH + cr * cd, -sr * cd * cH + cr * sd],
+                [-cr * sH, -sd * cr * cH + sr * cd, cr * cd * cH + sr * sd],
+            ]
+        )
         # Using a tensordot here is faster than einsum
         # Specifying the axes is like using two transposes then numpy.dot
-        new_uvw_array = np.tensordot(rotation_matrix, self.uvw_array,
-                                     axes=[[1], [0]])
+        new_uvw_array = np.tensordot(rotation_matrix, self.uvw_array, axes=[[1], [0]])
         new_uvw_array = new_uvw_array.reshape(new_uvw_array.shape[0], -1)
         self.uvw_array = new_uvw_array
 
@@ -228,13 +234,13 @@ class UVGridder(object):
         """Convert UVWs array into a dictionary.
 
         Assumes W term is zero or very very small.
-        Elemetns of dictionary are lists of bls keyed by uv lengths
+        Elements of dictionary are lists of bls keyed by uv lengths
         """
         uvw_array = np.copy(self.uvw_array)
         for _u, _v in uvw_array[:2].T:
             if np.linalg.norm([_u, _v]) == 0:
                 continue
-            uv = '{0:.3f},{1:.3f}'.format(_u, _v)
+            uv = "{0:.3f},{1:.3f}".format(_u, _v)
             if uv in self.uvbins.keys():
                 self.uvbins[uv].append(uv)
             else:
@@ -249,7 +255,7 @@ class UVGridder(object):
         #     weights = 1. - (np.abs(uv - grid)/np.diff(grid)[0])**2
         #     weights = np.exp( - (uv - grid)**2/(2*np.diff(grid)[0]**2))
         #     weights = np.exp( - abs(uv - grid)/(np.diff(grid)[0]))
-        _range = (np.arange(self.uv_size) - (self.uv_size - 1) / 2.)
+        _range = np.arange(self.uv_size) - (self.uv_size - 1) / 2.0
         _range *= self.uv_delta
         x, y = np.meshgrid(_range, _range)
         x.shape += (1,)
@@ -257,7 +263,7 @@ class UVGridder(object):
         x = u - x
         y = v - y
         dists = np.linalg.norm([x, y], axis=0)
-        weights = (1. - dists / self.wavelength_scale)
+        weights = 1.0 - dists / self.wavelength_scale
         weights = np.ma.masked_less_equal(weights, 0).filled(0)
         weights /= np.sum(weights, axis=(0, 1))
         weights = np.transpose(weights, [2, 0, 1])
@@ -267,22 +273,24 @@ class UVGridder(object):
         """Convert uvbin dictionary to a UV-plane."""
         uvbin = self.uvbins[uv_key]
         nbls = len(uvbin)
-        u, v = np.array(list(map(float, uv_key.split(','))))
+        u, v = np.array(list(map(float, uv_key.split(","))))
         u /= self.wavelength
         v /= self.wavelength
-        _beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size),
-                         dtype=np.complex)
+        _beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size), dtype=complex)
         # Create interpolation weights based on grid size and sampling
         _beam += self.uv_weights(u, v)
         self.uvf_cube += nbls * _beam
 
     def grid_uvw(self):
         """Create UV coverage from object data."""
-        self.uv_size = int(np.round(self.bl_len_max
-                                    / self.wavelength
-                                    / self.uv_delta).max() * 1.1) * 2 + 5
+        self.uv_size = (
+            int(np.round(self.bl_len_max / self.wavelength / self.uv_delta).max() * 1.1)
+            * 2
+            + 5
+        )
         self.uvf_cube = np.zeros(
-            (self.freqs.size, self.uv_size, self.uv_size), dtype=np.complex)
+            (self.freqs.size, self.uv_size, self.uv_size), dtype=complex
+        )
         for uv_key in self.uvbins.keys():
             self.__sum_uv__(uv_key)
         beam_array = self.get_uv_beam()
@@ -291,8 +299,7 @@ class UVGridder(object):
             beam_array = np.tile(beam_array[0], (self.freqs.size, 1, 1))
         for _fq in range(self.freqs.size):
             beam = beam_array[_fq]
-            self.uvf_cube[_fq] = fftconvolve(self.uvf_cube[_fq],
-                                             beam, mode='same')
+            self.uvf_cube[_fq] = fftconvolve(self.uvf_cube[_fq], beam, mode="same")
 
     def calc_all(self, refresh_all=True):
         """Calculate all necessary info.

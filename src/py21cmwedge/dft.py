@@ -1,20 +1,20 @@
 """Beam Handling and DFT Modules."""
+
 import healpy as hp
 import numpy as np
-from six.moves import range
 
 
 def hpx_to_uv(map_in, uv_delta):
     """Perform Discrete Fourier Transform from the healpix map to uv plane.
 
-    UV plane size determined by healpix pixel size measued in wavelengths
+    UV plane size determined by healpix pixel size measured in wavelengths
     uv pixel size determined by uv_delta.
     """
     # Get info of the input map
     nside = hp.get_nside(map_in)
-    pix_size = 1. / hp.nside2resol(nside)  # 1./pix_resol to get wavelengths
+    pix_size = 1.0 / hp.nside2resol(nside)  # 1./pix_resol to get wavelengths
     # Only create a grid as large as the +/- pixel_size/2
-    uv_size = np.ceil(pix_size / 2.)  # in wavelengths
+    uv_size = np.ceil(pix_size / 2.0)  # in wavelengths
     # Cut the size in half so only extends the amount of 1 Healpix
     # pixel in wavelengths
     # The corners will be slightly longer but that should be okay.
@@ -23,16 +23,16 @@ def hpx_to_uv(map_in, uv_delta):
     uv_size /= uv_delta  # in pixels
     uv_size = int(uv_size)
     # we want to make sure the uv_size is always odd
-    if (uv_size % 2 == 0):
+    if uv_size % 2 == 0:
         uv_size += 1
     # Create a the _u,_v grid and baselines vectors
     _range = np.arange(uv_size).astype(np.float64)
-    center = (uv_size - 1) / 2.
+    center = (uv_size - 1) / 2.0
     _range -= center
     _range *= uv_delta
     _u, _v = np.meshgrid(_range, _range)
 
-    uv_beam = np.zeros_like(_u, dtype=np.complex)
+    uv_beam = np.zeros_like(_u, dtype=complex)
 
     # Before DFT, get all pixels above the horizon
     # and stack the unit vectors (x,y) into array
@@ -42,7 +42,7 @@ def hpx_to_uv(map_in, uv_delta):
 
     for cnt in range(_u.ravel().size):
         __u, __v = _u.ravel()[cnt], _v.ravel()[cnt]
-        b_dot_s = np.einsum('i,i...', [__u, __v], s_)
+        b_dot_s = np.einsum("i,i...", [__u, __v], s_)
         phases = np.exp(-2j * np.pi * b_dot_s[pix_above_horizon])
         uv_beam.ravel()[cnt] = np.mean(map_in[pix_above_horizon] * phases)
 
@@ -52,17 +52,17 @@ def hpx_to_uv(map_in, uv_delta):
 def uv_to_hpx(uv_beam, nside, uv_delta):
     """Perform Discrete Fourier Transform from the uv plane to the sky.
 
-    Choose Nsize parameter for Healpix map resolution.
+    Choose Nside parameter for Healpix map resolution.
     Provide uv_delta, pixel size of uv plane
     """
     uv_size = uv_beam.shape[0]
     _range = np.arange(uv_size).astype(np.float64)
-    center = (uv_size - 1) / 2.
+    center = (uv_size - 1) / 2.0
     _range -= center
     _range *= uv_delta
     _u, _v = np.meshgrid(_range, _range)
 
-    sky_beam = np.zeros(hp.nside2npix(nside), dtype=np.complex)
+    sky_beam = np.zeros(hp.nside2npix(nside), dtype=complex)
     # Before DFT, get all pixels above the horizon
     # and stack the unit vectors (x,y) into array
     _xyz = hp.pix2vec(nside, np.arange(sky_beam.size))
@@ -71,7 +71,7 @@ def uv_to_hpx(uv_beam, nside, uv_delta):
 
     # Perform the DFT for each sky pixel
     for pix in pix_above_horizon:
-        b_dot_s = np.einsum('i...,i', [_u, _v], s_.T[pix])
+        b_dot_s = np.einsum("i...,i", [_u, _v], s_.T[pix])
         phases = np.exp(2j * np.pi * b_dot_s)
         sky_beam[pix] = np.sum(uv_beam * phases)
 
