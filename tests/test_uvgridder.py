@@ -311,3 +311,16 @@ def test_grid_uv():
     test_obj.uvw_to_dict()
     test_obj.grid_uvw()
     assert isinstance(test_obj.uvf_cube.flatten()[0], complex)
+
+
+def test_grid_uv_deltas():
+    """Test grid_uv sets up complex type."""
+    test_obj = UVGridder()
+    test_obj.uv_delta = 0.5
+    test_obj.set_freqs(150e6)
+    test_uvw = np.zeros((3, 10)) + np.array([[14.6], [0], [0]])
+    test_obj.set_uvw_array(test_uvw)
+    test_obj.uvw_to_dict()
+    test_obj.grid_uvw(convolve_beam=False, spatial_function="nearest")
+
+    np.testing.assert_allclose(test_obj.uvf_cube[0, 33, 18], 10)

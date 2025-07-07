@@ -248,7 +248,7 @@ class UVGridder(object):
             else:
                 self.uvbins[uv] = [uv]
 
-    def uv_weights(self, u, v):
+    def uv_weights(self, u, v, spatial_function="triangle"):
         """Compute weights for arbitrary baseline on a gridded UV plane.
 
         uv must be in units of pixels.
@@ -259,19 +259,32 @@ class UVGridder(object):
         #     weights = np.exp( - abs(uv - grid)/(np.diff(grid)[0]))
         _range = np.arange(self.uv_size) - (self.uv_size - 1) / 2.0
         _range *= self.uv_delta
-        x, y = np.meshgrid(_range, _range)
-        x.shape += (1,)
-        y.shape += (1,)
-        x = u - x
-        y = v - y
-        dists = np.linalg.norm([x, y], axis=0)
-        weights = 1.0 - dists / self.wavelength_scale
-        weights = np.ma.masked_less_equal(weights, 0).filled(0)
-        weights /= np.sum(weights, axis=(0, 1))
-        weights = np.transpose(weights, [2, 0, 1])
+        match spatial_function.casefold():
+            case "triangle":
+                x, y = np.meshgrid(_range, _range)
+                x.shape += (1,)
+                y.shape += (1,)
+                x = u - x
+                y = v - y
+                dists = np.linalg.norm([x, y], axis=0)
+                weights = 1.0 - dists / self.wavelength_scale
+                weights = np.ma.masked_less_equal(weights, 0).filled(0)
+                weights /= np.sum(weights, axis=(0, 1))
+                weights = np.transpose(weights, [2, 0, 1])
+            case "nearest":
+                u_index = np.argmin(np.abs(u - _range))
+                v_index = np.argmin(np.abs(v - _range))
+                print(f"{u_index=:}, {v_index=:}")
+                weights = np.zeros((1, self.uv_size, self.uv_size), dtype=complex)
+                weights[0, u_index, v_index] = 1.0
+            case _:
+                raise ValueError(
+                    f"Unknown value for 'spatial_function': {spatial_function}"
+                )
+
         return weights
 
-    def __sum_uv__(self, uv_key):
+    def __sum_uv__(self, uv_key, spatial_function="triangle"):
         """Convert uvbin dictionary to a UV-plane."""
         uvbin = self.uvbins[uv_key]
         nbls = len(uvbin)
@@ -280,10 +293,10 @@ class UVGridder(object):
         v /= self.wavelength
         _beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size), dtype=complex)
         # Create interpolation weights based on grid size and sampling
-        _beam += self.uv_weights(u, v)
+        _beam += self.uv_weights(u, v, spatial_function=spatial_function)
         self.uvf_cube += nbls * _beam
 
-    def grid_uvw(self):
+    def grid_uvw(self, convolve_beam=True, spatial_function="triangle"):
         """Create UV coverage from object data."""
         self.uv_size = (
             int(np.round(self.bl_len_max / self.wavelength / self.uv_delta).max() * 1.1)
@@ -294,22 +307,35 @@ class UVGridder(object):
             (self.freqs.size, self.uv_size, self.uv_size), dtype=complex
         )
         for uv_key in self.uvbins.keys():
-            self.__sum_uv__(uv_key)
+            self.__sum_uv__(uv_key, spatial_function=spatial_function)
         beam_array = self.get_uv_beam()
         # if only one beam was given, use that beam for all freqs
         if np.shape(beam_array)[0] < self.freqs.size:
             beam_array = np.tile(beam_array[0], (self.freqs.size, 1, 1))
-        for _fq in range(self.freqs.size):
-            beam = beam_array[_fq]
-            self.uvf_cube[_fq] = fftconvolve(self.uvf_cube[_fq], beam, mode="same")
 
-    def calc_all(self, refresh_all=True):
+        if convolve_beam:
+            for _fq in range(self.freqs.size):
+                beam = beam_array[_fq]
+                self.uvf_cube[_fq] = fftconvolve(self.uvf_cube[_fq], beam, mode="same")
+
+    def calc_all(
+        self, refresh_all=True, convolve_beam=True, spatial_function="triangle"
+    ):
         """Calculate all necessary info.
 
         Perform All calculations:
         Convert uvw_array to dict (uvw_to_dict())
         Grid uvw to plane (grid_uvw())
-        refresh_all : boolean, if true, recalculate the uvbins
+
+        Parameters
+        -----------
+        refresh_all : boolean,
+            if true, recalculate the uvbins
+        convolve_beam: bool
+            when set to true, perform an FFT convolution with the supplied beam
+        spatial_function: string
+            must be one of ["nearest", "triangle"]. Nearest modes performs delta function like assignment into a uv-bin
+            triangle performs simple distance based weighting of uv-bins based on self.wavelength_scale slope
         """
         if refresh_all:
             self.uvbins = {}
@@ -317,4 +343,4 @@ class UVGridder(object):
         if self.n_obs > 1:
             self.simulate_observation()
         self.uvw_to_dict()
-        self.grid_uvw()
+        self.grid_uvw(convolve_beam=convolve_beam, spatial_function=spatial_function)
