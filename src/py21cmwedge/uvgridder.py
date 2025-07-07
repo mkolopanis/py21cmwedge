@@ -252,6 +252,14 @@ class UVGridder(object):
         """Compute weights for arbitrary baseline on a gridded UV plane.
 
         uv must be in units of pixels.
+
+        Parameters
+        ----------
+        convolve_beam: bool
+            when set to true, perform an FFT convolution with the supplied beam
+        spatial_function: string
+            must be one of ["nearest", "triangle"]. Nearest modes performs delta function like assignment into a uv-bin
+            triangle performs simple distance based weighting of uv-bins based on self.wavelength_scale slope
         """
         # weights = 1. - np.abs(uv - grid)/np.diff(grid)[0]
         #     weights = 1. - (np.abs(uv - grid)/np.diff(grid)[0])**2
@@ -285,7 +293,14 @@ class UVGridder(object):
         return weights
 
     def __sum_uv__(self, uv_key, spatial_function="triangle"):
-        """Convert uvbin dictionary to a UV-plane."""
+        """Convert uvbin dictionary to a UV-plane.
+
+        Parameters
+        ----------
+        spatial_function: string
+            must be one of ["nearest", "triangle"]. Nearest modes performs delta function like assignment into a uv-bin
+            triangle performs simple distance based weighting of uv-bins based on self.wavelength_scale slope
+        """
         uvbin = self.uvbins[uv_key]
         nbls = len(uvbin)
         u, v = np.array(list(map(float, uv_key.split(","))))
@@ -297,7 +312,16 @@ class UVGridder(object):
         self.uvf_cube += nbls * _beam
 
     def grid_uvw(self, convolve_beam=True, spatial_function="triangle"):
-        """Create UV coverage from object data."""
+        """Create UV coverage from object data.
+
+        Parameters
+        ----------
+        convolve_beam: bool
+            when set to true, perform an FFT convolution with the supplied beam
+        spatial_function: string
+            must be one of ["nearest", "triangle"]. Nearest modes performs delta function like assignment into a uv-bin
+            triangle performs simple distance based weighting of uv-bins based on self.wavelength_scale slope
+        """
         self.uv_size = (
             int(np.round(self.bl_len_max / self.wavelength / self.uv_delta).max() * 1.1)
             * 2
