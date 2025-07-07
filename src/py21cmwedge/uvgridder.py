@@ -238,14 +238,18 @@ class UVGridder(object):
         Assumes W term is zero or very very small.
         Elements of dictionary are lists of bls keyed by uv lengths
         """
-        for _u, _v in self.uvw_array[:2].T:
-            if np.linalg.norm([_u, _v]) == 0:
+
+        def to_str(arr):
+            return f"{arr[0]:.3f},{arr[1]:.3f}"
+
+        uv_bins, counts = np.unique(
+            np.apply_along_axis(to_str, 0, self.uvw_array), return_counts=True
+        )
+
+        for uv_bin, count in zip(uv_bins, counts):
+            if uv_bin == "0.000,0.000":
                 continue
-            uv = "{0:.3f},{1:.3f}".format(_u, _v)
-            if uv in self.uvbins.keys():
-                self.uvbins[uv].append(uv)
-            else:
-                self.uvbins[uv] = [uv]
+            self.uvbins[uv_bin] = count
 
     def uv_weights(self, u, v, spatial_function="triangle"):
         """Compute weights for arbitrary baseline on a gridded UV plane.
@@ -309,8 +313,7 @@ class UVGridder(object):
             triangle performs simple distance based weighting of uv-bins based
             on self.wavelength_scale slope
         """
-        uvbin = self.uvbins[uv_key]
-        nbls = len(uvbin)
+        nbls = self.uvbins[uv_key]
         u, v = np.array(list(map(float, uv_key.split(","))))
         u /= self.wavelength
         v /= self.wavelength

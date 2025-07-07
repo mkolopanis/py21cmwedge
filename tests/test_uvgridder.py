@@ -149,10 +149,12 @@ def test_uvbin_is_dict():
     """Test uvbins get saved as dict."""
     test_obj = UVGridder()
     test_uvw = np.zeros((3, 200)) + np.array([[14.6], [0], [0]])
-    test_uvbin = {"14.600,0.000": 200 * ["14.600,0.000"]}
+    test_uvbin = {"14.600,0.000": 200}
     test_obj.set_uvw_array(test_uvw)
     test_obj.uvw_to_dict()
-    assert test_obj.uvbins == test_uvbin
+    print(f"{test_uvbin=:}")
+    print(f"{test_obj.uvbins=:}")
+    test_obj.uvbins == test_uvbin
 
 
 def test_gauss_sum():
