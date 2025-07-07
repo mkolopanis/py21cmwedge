@@ -265,10 +265,10 @@ class UVGridder(object):
         #     weights = 1. - (np.abs(uv - grid)/np.diff(grid)[0])**2
         #     weights = np.exp( - (uv - grid)**2/(2*np.diff(grid)[0]**2))
         #     weights = np.exp( - abs(uv - grid)/(np.diff(grid)[0]))
-        _range = np.arange(self.uv_size) - (self.uv_size - 1) / 2.0
-        _range *= self.uv_delta
         match spatial_function.casefold():
             case "triangle":
+                _range = np.arange(self.uv_size) - (self.uv_size - 1) / 2.0
+                _range *= self.uv_delta
                 x, y = np.meshgrid(_range, _range)
                 x.shape += (1,)
                 y.shape += (1,)
@@ -280,11 +280,22 @@ class UVGridder(object):
                 weights /= np.sum(weights, axis=(0, 1))
                 weights = np.transpose(weights, [2, 0, 1])
             case "nearest":
-                u_index = np.argmin(np.abs(u - _range))
-                v_index = np.argmin(np.abs(v - _range))
+                _range = np.arange(self.uv_size) - (self.uv_size - 1) / 2.0
+                _range *= self.uv_delta
+                x, y = _range, _range
+                x.shape += (1,)
+                y.shape += (1,)
+                x = u - x
+                y = v - y
+                u_index = np.argmin(np.abs(x), axis=0)
+                v_index = np.argmin(np.abs(y), axis=0)
+
+                print(f"{u_index.shape=:}, {v_index.shape=:}")
                 print(f"{u_index=:}, {v_index=:}")
-                weights = np.zeros((1, self.uv_size, self.uv_size), dtype=complex)
-                weights[0, u_index, v_index] = 1.0
+                weights = np.zeros(
+                    (x.shape[-1], self.uv_size, self.uv_size), dtype=complex
+                )
+                weights[:, u_index, v_index] = 1.0
             case _:
                 raise ValueError(
                     f"Unknown value for 'spatial_function': {spatial_function}"
