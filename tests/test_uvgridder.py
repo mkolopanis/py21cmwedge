@@ -48,6 +48,10 @@ def test_read_antpos():
             [-1, 1, 0],
         ]
     ).T
+    # min baseline length 1 unit
+    np.testing.assert_allclose(test_obj.bl_len_min, 1.0)
+    # min baseline length 2* sqrt(2) units
+    np.testing.assert_allclose(test_obj.bl_len_max, 2 * np.sqrt(2))
     np.testing.assert_allclose(test_antpos, test_obj.antpos)
 
 
@@ -117,7 +121,8 @@ def test_sigma_from_fwhm():
     test_fwhm = 2.0
     test_sigma = test_fwhm / np.sqrt(4.0 * np.log(2))
     test_obj.set_fwhm(test_fwhm)
-    assert test_sigma == test_obj.sigma_beam
+    np.testing.assert_allclose(test_sigma, test_obj.sigma_beam)
+    np.testing.assert_allclose(test_obj.fwhm, 2.0)
 
 
 def test_set_sigma():
@@ -126,7 +131,8 @@ def test_set_sigma():
     test_fwhm = 2.0
     test_sigma = test_fwhm / np.sqrt(4.0 * np.log(2))
     test_obj.set_sigma_beam(test_sigma)
-    assert test_sigma == test_obj.sigma_beam
+    np.testing.assert_allclose(test_sigma, test_obj.sigma_beam)
+    np.testing.assert_allclose(test_obj.fwhm, 2.0)
 
 
 def test_zero_uvbin():

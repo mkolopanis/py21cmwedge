@@ -26,7 +26,6 @@ class UVGridder(object):
         self.uv_delta = 1  # default 1 wavelength pixels
         self.wavelength_scale = 2.0  # Max wavelength scale of antenna
         self.fwhm = 1.0
-        self.sigma_beam = self.fwhm / np.sqrt(4.0 * np.log(2.0))
         self.uv_beam_array = None
         self.beam_sky = None
         self.omega = 2 * np.pi / (23.0 * 3600.0 + 56 * 60.0 + 4.09)
@@ -34,6 +33,14 @@ class UVGridder(object):
         self.latitude = 0  # set default array at the equator
         self.ra = None
         self.n_obs = 1  # Default to a single snapshot
+
+    @property
+    def sigma_beam(self):
+        return self.fwhm / np.sqrt(4.0 * np.log(2.0))
+
+    @sigma_beam.setter
+    def sigma_beam(self, sigma):
+        self.fwhm = sigma * np.sqrt(4.0 * np.log(2.0))
 
     def set_uv_delta(self, delta):
         """Set grid sampling size."""
@@ -99,12 +106,10 @@ class UVGridder(object):
     def set_fwhm(self, fwhm):
         """Set the FWHM of a Gaussian Beam."""
         self.fwhm = fwhm
-        self.sigma_beam = self.fwhm / np.sqrt(4.0 * np.log(2))
 
     def set_sigma_beam(self, sigma):
         """Manually Set Gaussian standard deviation for Beam."""
         self.sigma_beam = sigma
-        self.fwhm = self.sigma_beam * np.sqrt(4 * np.log(2))
 
     def gauss(self):
         """Return simple 2-d Gaussian."""
@@ -182,15 +187,12 @@ class UVGridder(object):
     def __createuv__(self):
         """Create Matrix of UVs from antenna positions."""
         u_rows1 = np.tile(self.antpos[0], (self.antpos.shape[1], 1))
-        u_rows2 = np.tile(self.antpos[0], (self.antpos.shape[1], 1)).T
         v_rows1 = np.tile(self.antpos[1], (self.antpos.shape[1], 1))
-        v_rows2 = np.tile(self.antpos[1], (self.antpos.shape[1], 1)).T
         w_rows1 = np.tile(self.antpos[2], (self.antpos.shape[1], 1))
-        w_rows2 = np.tile(self.antpos[2], (self.antpos.shape[1], 1)).T
 
-        u = u_rows1 - u_rows2
-        v = v_rows1 - v_rows2
-        w = w_rows1 - w_rows2
+        u = u_rows1 - u_rows1.T
+        v = v_rows1 - v_rows1.T
+        w = w_rows1 - w_rows1.T
         return np.array([u.ravel(), v.ravel(), w.ravel()])
 
     def uvw_stats(self):
