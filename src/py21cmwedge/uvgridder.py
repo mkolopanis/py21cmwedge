@@ -290,8 +290,6 @@ class UVGridder(object):
                 u_index = np.argmin(np.abs(x), axis=0)
                 v_index = np.argmin(np.abs(y), axis=0)
 
-                print(f"{u_index.shape=:}, {v_index.shape=:}")
-                print(f"{u_index=:}, {v_index=:}")
                 weights = np.zeros(
                     (x.shape[-1], self.uv_size, self.uv_size), dtype=complex
                 )
