@@ -32,21 +32,22 @@ def hpx_to_uv(map_in, uv_delta):
     _range *= uv_delta
     _u, _v = np.meshgrid(_range, _range)
 
-    uv_beam = np.zeros_like(_u, dtype=complex)
+    uv_beam = np.zeros_like(_u, dtype=complex).ravel()
 
     # Before DFT, get all pixels above the horizon
     # and stack the unit vectors (x,y) into array
     _xyz = hp.pix2vec(nside, np.arange(map_in.size))
     pix_above_horizon = np.where(_xyz[2] >= 0)[0]
     s_ = np.array([_xyz[0], _xyz[1]])  # stack x,y into array
+    _u = _u.ravel()
+    _v = _v.ravel()
+    _uv = np.array([_u, _v])
 
-    for cnt in range(_u.ravel().size):
-        __u, __v = _u.ravel()[cnt], _v.ravel()[cnt]
-        b_dot_s = np.einsum("i,i...", [__u, __v], s_)
-        phases = np.exp(-2j * np.pi * b_dot_s[pix_above_horizon])
-        uv_beam.ravel()[cnt] = np.mean(map_in[pix_above_horizon] * phases)
+    b_dot_s = np.einsum("ij,ik -> jk", _uv, s_)
+    phases = np.exp(-2j * np.pi * b_dot_s[:, pix_above_horizon])
+    uv_beam = np.mean(map_in[pix_above_horizon] * phases, axis=1)
 
-    return uv_beam
+    return uv_beam.reshape((uv_size, uv_size))
 
 
 def uv_to_hpx(uv_beam, nside, uv_delta):
@@ -56,6 +57,9 @@ def uv_to_hpx(uv_beam, nside, uv_delta):
     Provide uv_delta, pixel size of uv plane
     """
     uv_size = uv_beam.shape[0]
+    uv_beam = uv_beam.ravel()
+    uv_beam.shape += (1,)
+
     _range = np.arange(uv_size).astype(np.float64)
     center = (uv_size - 1) / 2.0
     _range -= center
@@ -67,12 +71,12 @@ def uv_to_hpx(uv_beam, nside, uv_delta):
     # and stack the unit vectors (x,y) into array
     _xyz = hp.pix2vec(nside, np.arange(sky_beam.size))
     pix_above_horizon = np.where(_xyz[2] >= 0)[0]
-    s_ = np.array([_xyz[0], _xyz[1]])  # stack x,y into array
+    s_ = np.array([_xyz[0], _xyz[1]])[:, pix_above_horizon]  # stack x,y into array
+    _uv = np.array([_u.ravel(), _v.ravel()])
 
     # Perform the DFT for each sky pixel
-    for pix in pix_above_horizon:
-        b_dot_s = np.einsum("i...,i", [_u, _v], s_.T[pix])
-        phases = np.exp(2j * np.pi * b_dot_s)
-        sky_beam[pix] = np.sum(uv_beam * phases)
+    b_dot_s = np.einsum("ij,ik-> jk", _uv, s_)
+    phases = np.exp(2j * np.pi * b_dot_s)
+    sky_beam[pix_above_horizon] = np.sum(uv_beam * phases, axis=0)
 
     return sky_beam

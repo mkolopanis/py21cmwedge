@@ -216,7 +216,7 @@ def test_set_beam_type():
     test_obj.set_fwhm(test_fwhm)
     test_obj.uv_size = 13
     # put a delta function on the sky
-    test_beam = np.zeros(12 * 128**2)
+    test_beam = np.zeros(12 * 32**2)
     test_beam[0] += 1
     test_obj.set_beam(test_beam)
 
