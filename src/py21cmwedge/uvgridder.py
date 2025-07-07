@@ -238,8 +238,7 @@ class UVGridder(object):
         Assumes W term is zero or very very small.
         Elements of dictionary are lists of bls keyed by uv lengths
         """
-        uvw_array = np.copy(self.uvw_array)
-        for _u, _v in uvw_array[:2].T:
+        for _u, _v in self.uvw_array[:2].T:
             if np.linalg.norm([_u, _v]) == 0:
                 continue
             uv = "{0:.3f},{1:.3f}".format(_u, _v)
@@ -258,13 +257,11 @@ class UVGridder(object):
         convolve_beam: bool
             when set to true, perform an FFT convolution with the supplied beam
         spatial_function: string
-            must be one of ["nearest", "triangle"]. Nearest modes performs delta function like assignment into a uv-bin
-            triangle performs simple distance based weighting of uv-bins based on self.wavelength_scale slope
+            must be one of ["nearest", "triangle"].
+            Nearest modes performs delta function like assignment into a uv-bin
+            triangle performs simple distance based weighting of uv-bins based
+              on self.wavelength_scale slope
         """
-        # weights = 1. - np.abs(uv - grid)/np.diff(grid)[0]
-        #     weights = 1. - (np.abs(uv - grid)/np.diff(grid)[0])**2
-        #     weights = np.exp( - (uv - grid)**2/(2*np.diff(grid)[0]**2))
-        #     weights = np.exp( - abs(uv - grid)/(np.diff(grid)[0]))
         match spatial_function.casefold():
             case "triangle":
                 _range = np.arange(self.uv_size) - (self.uv_size - 1) / 2.0
@@ -307,8 +304,10 @@ class UVGridder(object):
         Parameters
         ----------
         spatial_function: string
-            must be one of ["nearest", "triangle"]. Nearest modes performs delta function like assignment into a uv-bin
-            triangle performs simple distance based weighting of uv-bins based on self.wavelength_scale slope
+            must be one of ["nearest", "triangle"].
+            Nearest modes performs delta function like assignment into a uv-bin
+            triangle performs simple distance based weighting of uv-bins based
+            on self.wavelength_scale slope
         """
         uvbin = self.uvbins[uv_key]
         nbls = len(uvbin)
@@ -328,8 +327,10 @@ class UVGridder(object):
         convolve_beam: bool
             when set to true, perform an FFT convolution with the supplied beam
         spatial_function: string
-            must be one of ["nearest", "triangle"]. Nearest modes performs delta function like assignment into a uv-bin
-            triangle performs simple distance based weighting of uv-bins based on self.wavelength_scale slope
+            must be one of ["nearest", "triangle"].
+            Nearest modes performs delta function like assignment into a uv-bin
+            triangle performs simple distance based weighting of uv-bins based
+              on self.wavelength_scale slope
         """
         self.uv_size = (
             int(np.round(self.bl_len_max / self.wavelength / self.uv_delta).max() * 1.1)
@@ -367,8 +368,10 @@ class UVGridder(object):
         convolve_beam: bool
             when set to true, perform an FFT convolution with the supplied beam
         spatial_function: string
-            must be one of ["nearest", "triangle"]. Nearest modes performs delta function like assignment into a uv-bin
-            triangle performs simple distance based weighting of uv-bins based on self.wavelength_scale slope
+            must be one of ["nearest", "triangle"].
+            Nearest modes performs delta function like assignment into a uv-bin
+            triangle performs simple distance based weighting of uv-bins based
+              on self.wavelength_scale slope
         """
         if refresh_all:
             self.uvbins = {}
