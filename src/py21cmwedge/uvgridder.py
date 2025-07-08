@@ -346,12 +346,12 @@ class UVGridder(object):
         )
         for uv_key in self.uvbins.keys():
             self.__sum_uv__(uv_key, spatial_function=spatial_function)
-        beam_array = self.get_uv_beam()
-        # if only one beam was given, use that beam for all freqs
-        if np.shape(beam_array)[0] < self.freqs.size:
-            beam_array = np.tile(beam_array[0], (self.freqs.size, 1, 1))
 
         if convolve_beam:
+            beam_array = self.get_uv_beam()
+            # if only one beam was given, use that beam for all freqs
+            if np.shape(beam_array)[0] < self.freqs.size:
+                beam_array = np.tile(beam_array[0], (self.freqs.size, 1, 1))
             for _fq in range(self.freqs.size):
                 beam = beam_array[_fq]
                 self.uvf_cube[_fq] = fftconvolve(self.uvf_cube[_fq], beam, mode="same")
