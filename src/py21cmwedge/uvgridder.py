@@ -240,10 +240,15 @@ class UVGridder(object):
         """
 
         def to_str(arr):
-            return f"{arr[0]:.3f},{arr[1]:.3f}"
+            return np.array(f"{arr[0]:.3f},{arr[1]:.3f}", dtype=object)
 
         uv_bins, counts = np.unique(
-            np.apply_along_axis(to_str, 0, self.uvw_array), return_counts=True
+            np.apply_along_axis(
+                to_str,
+                0,
+                self.uvw_array,
+            ),
+            return_counts=True,
         )
 
         for uv_bin, count in zip(uv_bins, counts):

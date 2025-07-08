@@ -55,6 +55,43 @@ def test_read_antpos():
     np.testing.assert_allclose(test_antpos, test_obj.antpos)
 
 
+def test_calc_uvw():
+    """Antenna Position file to uvws test.
+
+    Read in antenna positions, convert to uvws,
+    check equality with predefined uvw file.
+    """
+    test_obj = UVGridder()
+    test_obj.read_antpos(
+        os.path.join(TEST_DATA_PATH, "test_antpos.txt"), skiprows=1, delimiter=","
+    )
+    test_antpos = np.array(
+        [
+            [0, 0, 0],
+            [1, 0, 0],
+            [0, 1, 0],
+            [-1, 0, 0],
+            [0, -1, 0],
+            [1, 1, 0],
+            [-1, -1, 0],
+            [1, -1, 0],
+            [-1, 1, 0],
+        ]
+    ).T
+
+    u = (
+        np.expand_dims(test_antpos[0], 0).astype(np.float64)
+        - np.expand_dims(test_antpos[0], 1).astype(np.float64)
+    ).ravel()
+    v = (
+        np.expand_dims(test_antpos[1], 0).astype(np.float64)
+        - np.expand_dims(test_antpos[1], 1).astype(np.float64)
+    ).ravel()
+
+    np.testing.assert_allclose(u, test_obj.uvw_array[0])
+    np.testing.assert_allclose(v, test_obj.uvw_array[1])
+
+
 def test_freq_from_int():
     """Create frequency array from integer input."""
     test_obj = UVGridder()
@@ -142,19 +179,26 @@ def test_zero_uvbin():
     test_uvbin = {}
     test_obj.set_uvw_array(test_uvw)
     test_obj.uvw_to_dict()
+
     assert test_obj.uvbins == test_uvbin
 
 
 def test_uvbin_is_dict():
     """Test uvbins get saved as dict."""
     test_obj = UVGridder()
-    test_uvw = np.zeros((3, 200)) + np.array([[14.6], [0], [0]])
-    test_uvbin = {"14.600,0.000": 200}
+    test_uvw = np.concatenate(
+        [
+            np.tile([14.6, 0, 0], (1, 1)),
+            np.tile([0, 14.6, 0], (2, 1)),
+            np.tile([14.6, 14.6, 0], (3, 1)),
+        ],
+        axis=0,
+    ).T
+    test_uvbin = {"14.600,0.000": 1, "0.000,14.600": 2, "14.600,14.600": 3}
+    test_uvbin = {np.str_(key): np.int64(val) for (key, val) in test_uvbin.items()}
     test_obj.set_uvw_array(test_uvw)
     test_obj.uvw_to_dict()
-    print(f"{test_uvbin=:}")
-    print(f"{test_obj.uvbins=:}")
-    test_obj.uvbins == test_uvbin
+    np.testing.assert_equal(test_obj.uvbins, test_uvbin)
 
 
 def test_gauss_sum():
