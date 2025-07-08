@@ -288,13 +288,14 @@ class UVGridder(object):
                 y.shape += (1,)
                 x = u - x
                 y = v - y
-                u_index = np.argmin(np.abs(x), axis=0)
-                v_index = np.argmin(np.abs(y), axis=0)
+                u_index = np.argmin(np.abs(x), axis=0).squeeze()
+                v_index = np.argmin(np.abs(y), axis=0).squeeze()
 
                 weights = np.zeros(
                     (x.shape[-1], self.uv_size, self.uv_size), dtype=complex
                 )
-                weights[:, u_index, v_index] = 1.0
+
+                weights[range(weights.shape[0]), u_index, v_index] = 1.0
             case _:
                 raise ValueError(
                     f"Unknown value for 'spatial_function': {spatial_function}"
