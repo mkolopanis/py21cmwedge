@@ -314,7 +314,7 @@ def test_weights_sum():
     test_obj = UVGridder()
     test_obj.set_uv_delta(0.5)
     test_obj.set_freqs(150e6)
-    test_obj.uv_delta = 0.1
+    test_obj.uv_delta = 0.5
     test_uvw = np.array([[14.6], [0], [0]])
     test_obj.set_uvw_array(test_uvw)
     test_obj.calc_all(convolve_beam=False)

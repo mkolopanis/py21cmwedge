@@ -11,13 +11,24 @@ from tqdm import tqdm
 from . import dft
 
 
-@njit(numba.float64[:, :](numba.float64[:, :], numba.float64[:, :]))
-def norm(x, y):
-    out_array = np.zeros_like(x, dtype=x.dtype)
-    _out = out_array.ravel()
-    for cnt, (_x, _y) in enumerate(zip(x.flat, y.flat)):
-        _out[cnt] += np.sqrt(_x**2 + _y**2)
-    return out_array
+@njit(
+    numba.void(
+        numba.float64[:, :], numba.float64[:, :], numba.float64[:, :], numba.float64
+    )
+)
+def norm(x, y, out, scale_factor):
+    for cnt1 in range(out.shape[0]):
+        for cnt2 in range(out.shape[1]):
+            out[cnt1, cnt2] = max(
+                np.float64(1.0)
+                - np.sqrt(x[cnt1, cnt2] ** 2 + y[cnt1, cnt2] ** 2) / scale_factor,
+                np.float64(0),
+            )
+
+    out_norm = out.sum()
+
+    if out_norm > 0:
+        out /= out_norm
 
 
 # 2-d adaptation of https://stackoverflow.com/a/70614173
@@ -293,14 +304,16 @@ class UVGridder(object):
             numba.float64[:],
             numba.float64[:],
             numba.int32,
-            numba.complex128[:, :, :],
+            numba.float64[:, :, :],
             numba.int32,
             numba.float64,
             numba.float64,
-            numba.types.string,
+            numba.float64[:, :],
+            numba.float64[:, :],
+            numba.float64[:, :],
         )
     )
-    def uv_weights(
+    def _weights_tri(
         u,
         v,
         nbls,
@@ -308,7 +321,9 @@ class UVGridder(object):
         uv_size,
         uv_delta,
         wavelength_scale,
-        spatial_function="triangle",
+        x,
+        y,
+        weights,
     ):
         """Compute weights for arbitrary baseline on a gridded UV plane.
 
@@ -324,46 +339,64 @@ class UVGridder(object):
             triangle performs simple distance based weighting of uv-bins based
               on self.wavelength_scale slope
         """
-        match spatial_function.casefold():
-            case "triangle":
-                _range = np.arange(uv_size) - (uv_size - 1) / 2.0
-                _range *= uv_delta
-                x, y = meshgrid(_range, _range)
-                for freq_cnt, (_u, _v) in enumerate(zip(u, v)):
-                    _x = _u - x
-                    _y = _v - y
-                    dists = norm(_x, _y)
-                    weights = 1.0 - dists / wavelength_scale
-                    _w = weights.ravel()
-                    for cnt, __w in enumerate(_w):
-                        if __w < 0:
-                            _w[cnt] = 0
-                    # weights[weights <= 0] = 0
-                    # weights = np.ma.masked_less_equal(weights, 0).filled(0)
-                    weights /= weights.sum()
 
-                uvf_cube[freq_cnt] += weights * nbls
+        for freq_cnt, (_u, _v) in enumerate(zip(u, v)):
+            _x = _u - x[:, :]
+            _y = _v - y[:, :]
 
-            case "nearest":
-                _range = np.arange(uv_size) - (uv_size - 1) / 2.0
-                _range *= uv_delta
-                x, y = _range, _range
-                x = np.expand_dims(x, -1)
-                y = np.expand_dims(y, -1)
-                for freq_cnt, (_u, _v) in enumerate(zip(u, v)):
-                    _x = _u - x
-                    _y = _v - y
+            norm(_x, _y, weights, wavelength_scale)
 
-                    u_index = np.abs(_x).argmin()
-                    v_index = np.abs(_y).argmin()
+            # _w = weights.ravel()
+            # for cnt, __w in enumerate(_w):
+            #     if __w < 0:
+            #         _w[cnt] = 0
+            # # weights[weights <= 0] = 0
+            # # weights = np.ma.masked_less_equal(weights, 0).filled(0)
+            # weights /= weights.sum()
 
-                    # v,u indexing because y is the outer dimension in memory
-                    uvf_cube[freq_cnt, v_index, u_index] += 1.0 * nbls
+        uvf_cube[freq_cnt, :, :] += weights[:, :] * nbls
 
-            case _:
-                raise ValueError(
-                    f"Unknown value for 'spatial_function': {spatial_function}"
-                )
+    @staticmethod
+    @numba.njit(
+        numba.void(
+            numba.float64[:],
+            numba.float64[:],
+            numba.int32,
+            numba.float64[:, :, :],
+            numba.int32,
+            numba.float64,
+            numba.float64[:],
+        ),
+    )
+    def _weights_nearest(
+        u,
+        v,
+        nbls,
+        uvf_cube,
+        uv_size,
+        uv_delta,
+        x,
+    ):
+        """Compute weights for arbitrary baseline on a gridded UV plane.
+
+        uv must be in units of pixels.
+
+        Parameters
+        ----------
+        convolve_beam: bool
+            when set to true, perform an FFT convolution with the supplied beam
+        spatial_function: string
+            must be one of ["nearest", "triangle"].
+            Nearest modes performs delta function like assignment into a uv-bin
+            triangle performs simple distance based weighting of uv-bins based
+              on self.wavelength_scale slope
+        """
+        for freq_cnt, (_u, _v) in enumerate(zip(u, v)):
+            u_index = np.abs(_u - x[:]).argmin()
+            v_index = np.abs(_v - x[:]).argmin()
+
+            # v,u indexing because y is the outer dimension in memory
+            uvf_cube[freq_cnt, v_index, u_index] += nbls
 
     def __sum_uv__(self, uv_key, spatial_function="triangle"):
         """Convert uvbin dictionary to a UV-plane.
@@ -381,16 +414,35 @@ class UVGridder(object):
         u /= self.wavelength
         v /= self.wavelength
         # Create interpolation weights based on grid size and sampling
-        UVGridder.uv_weights(
-            u,
-            v,
-            nbls,
-            self.uvf_cube,
-            self.uv_size,
-            self.uv_delta,
-            self.wavelength_scale,
-            spatial_function=spatial_function,
-        )
+        match spatial_function:
+            case "triangle":
+                UVGridder._weights_tri(
+                    u,
+                    v,
+                    nbls,
+                    self.uvf_cube,
+                    self.uv_size,
+                    self.uv_delta,
+                    self.wavelength_scale,
+                    self.x,
+                    self.y,
+                    self.weights,
+                )
+            case "nearest":
+                UVGridder._weights_nearest(
+                    u,
+                    v,
+                    nbls,
+                    self.uvf_cube,
+                    self.uv_size,
+                    self.uv_delta,
+                    self.x,
+                )
+            case _:
+                raise ValueError(
+                    f"Unknown spatial_function ({spatial_function}), must be "
+                    '"nearest" or "triangle"'
+                )
 
     def grid_uvw(self, convolve_beam=True, spatial_function="triangle"):
         """Create UV coverage from object data.
@@ -410,13 +462,33 @@ class UVGridder(object):
             * 2
             + 5
         )
+
+        match spatial_function.casefold():
+            case "triangle":
+                _range = np.arange(self.uv_size) - (self.uv_size - 1) / 2.0
+                _range *= self.uv_delta
+                self.x, self.y = meshgrid(_range, _range)
+                self.weights = np.zeros_like(self.x)
+
+            case "nearest":
+                _range = np.arange(self.uv_size) - (self.uv_size - 1) / 2.0
+                _range *= self.uv_delta
+                self.x = _range
+            case _:
+                raise ValueError(
+                    f"Unknown value for 'spatial_function': {spatial_function}"
+                )
+
         self.uvf_cube = np.zeros(
-            (self.freqs.size, self.uv_size, self.uv_size), dtype=complex
+            (self.freqs.size, self.uv_size, self.uv_size), dtype=np.float64
         )
+
         for uv_key in tqdm(self.uvbins.keys(), unit="Baseline"):
             self.__sum_uv__(uv_key, spatial_function=spatial_function)
 
         if convolve_beam:
+            self.uvf_cube = self.uvf_cube.astype(np.complex128)
+
             beam_array = self.get_uv_beam()
             # if only one beam was given, use that beam for all freqs
             if np.shape(beam_array)[0] < self.freqs.size:
