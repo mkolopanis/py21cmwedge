@@ -354,8 +354,8 @@ class UVGridder(object):
                     _x = _u - x
                     _y = _v - y
 
-                    u_index = np.argmin(np.abs(_x))
-                    v_index = np.argmin(np.abs(_y))
+                    u_index = np.abs(_x).argmin()
+                    v_index = np.abs(_y).argmin()
 
                     # v,u indexing because y is the outer dimension in memory
                     uvf_cube[freq_cnt, v_index, u_index] += 1.0 * nbls
