@@ -313,9 +313,10 @@ def test_weights_sum():
     """Test the uv_weights are unity normalized."""
     test_obj = UVGridder()
     test_obj.set_uv_delta(0.5)
+    test_obj.set_freqs(150e6)
     test_obj.uv_size = 13
-    test_weights = test_obj.uv_weights(1, 1)
-    assert test_weights.sum() == 1
+    test_obj.uv_weights(1, 1, 1)
+    assert test_obj.uvf_cube.sum() == 1
 
 
 def test_sum_uv():

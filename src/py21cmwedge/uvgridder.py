@@ -264,7 +264,7 @@ class UVGridder(object):
                 continue
             self.uvbins[uv_bin] = count
 
-    def uv_weights(self, u, v, spatial_function="triangle"):
+    def uv_weights(self, u, v, nbls, spatial_function="triangle"):
         """Compute weights for arbitrary baseline on a gridded UV plane.
 
         uv must be in units of pixels.
@@ -279,6 +279,11 @@ class UVGridder(object):
             triangle performs simple distance based weighting of uv-bins based
               on self.wavelength_scale slope
         """
+        if self.uvf_cube is None:
+            self.uvf_cube = np.zeros(
+                (self.freqs.size, self.uv_size, self.uv_size), dtype=complex
+            )
+
         match spatial_function.casefold():
             case "triangle":
                 _range = np.arange(self.uv_size) - (self.uv_size - 1) / 2.0
@@ -293,6 +298,8 @@ class UVGridder(object):
                 weights = np.ma.masked_less_equal(weights, 0).filled(0)
                 weights /= np.sum(weights, axis=(0, 1))
                 weights = np.transpose(weights, [2, 0, 1])
+                self.uvf_cube += weights * nbls
+
             case "nearest":
                 _range = np.arange(self.uv_size) - (self.uv_size - 1) / 2.0
                 _range *= self.uv_delta
@@ -305,18 +312,13 @@ class UVGridder(object):
                 u_index = np.argmin(np.abs(x), axis=0)
                 v_index = np.argmin(np.abs(y), axis=0)
 
-                weights = np.zeros(
-                    (self.freqs.size, self.uv_size, self.uv_size), dtype=np.float64
-                )
                 # v,u indexing because y is the outer dimension in memory
-                weights[range(self.freqs.size), v_index, u_index] += 1.0
+                self.uvf_cube[range(self.freqs.size), v_index, u_index] += 1.0 * nbls
 
             case _:
                 raise ValueError(
                     f"Unknown value for 'spatial_function': {spatial_function}"
                 )
-
-        return weights
 
     def __sum_uv__(self, uv_key, spatial_function="triangle"):
         """Convert uvbin dictionary to a UV-plane.
@@ -333,10 +335,8 @@ class UVGridder(object):
         u, v = np.array(list(map(float, uv_key.split(","))))
         u /= self.wavelength
         v /= self.wavelength
-        _beam = np.zeros((self.freqs.size, self.uv_size, self.uv_size), dtype=complex)
         # Create interpolation weights based on grid size and sampling
-        _beam += self.uv_weights(u, v, spatial_function=spatial_function)
-        self.uvf_cube += nbls * _beam
+        self.uv_weights(u, v, nbls, spatial_function=spatial_function)
 
     def grid_uvw(self, convolve_beam=True, spatial_function="triangle"):
         """Create UV coverage from object data.
