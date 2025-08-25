@@ -43,6 +43,14 @@ class UVGridder(object):
     def sigma_beam(self, sigma):
         self.fwhm = sigma * np.sqrt(4.0 * np.log(2.0))
 
+    @property
+    def wavelength(self):
+        return const.c.to_value("m/s") / self.freqs
+
+    @wavelength.setter
+    def wavelength(self, wavelength):
+        self.freqs = const.c.to_value("m/s") / wavelength
+
     def set_uv_delta(self, delta):
         """Set grid sampling size."""
         self.uv_delta = delta
@@ -102,7 +110,6 @@ class UVGridder(object):
         else:
             freq = np.asarray(list(freq))
         self.freqs = freq
-        self.wavelength = const.c.to("m/s").value / self.freqs
 
     def set_fwhm(self, fwhm):
         """Set the FWHM of a Gaussian Beam."""

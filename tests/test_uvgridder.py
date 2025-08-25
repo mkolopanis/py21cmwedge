@@ -5,6 +5,7 @@ import os
 
 import numpy as np
 import pytest
+from astropy import constants as const
 
 from py21cmwedge import UVGridder
 
@@ -92,44 +93,28 @@ def test_calc_uvw():
     np.testing.assert_allclose(v, test_obj.uvw_array[1])
 
 
-def test_freq_from_int():
+@pytest.mark.parametrize(
+    "freq_in,expected_freq",
+    [
+        (150000000, np.asarray([150000000.0])),
+        (150000000.0, np.asarray([150000000.0])),
+        (150000000.0, np.asarray([150000000.0])),
+        ([150000000, 160000000], np.asarray([150000000, 160000000])),
+        (
+            set([170000000, 200000000]),
+            np.asarray([170000000, 200000000], dtype=np.float64),
+        ),
+        (np.array([100000000.0, 160000000.0]), np.array([100000000.0, 160000000.0])),
+    ],
+)
+def test_freqs(freq_in, expected_freq):
     """Create frequency array from integer input."""
     test_obj = UVGridder()
-    test_freq = 150000000
-    test_obj.set_freqs(test_freq)
-    assert type(test_obj.freqs) is np.ndarray
-
-
-def test_freq_from_float():
-    """Create frequency array from float input."""
-    test_obj = UVGridder()
-    test_freq = 150000000.0
-    test_obj.set_freqs(test_freq)
-    assert type(test_obj.freqs) is np.ndarray
-
-
-def test_freq_from_list():
-    """Create frequency array from list input."""
-    test_obj = UVGridder()
-    test_freq = [150000000, 160000000]
-    test_obj.set_freqs(test_freq)
-    assert type(test_obj.freqs) is np.ndarray
-
-
-def test_freq_from_set():
-    """Create frequency array from set input."""
-    test_obj = UVGridder()
-    test_freq = set([170000000, 200000000])
-    test_obj.set_freqs(test_freq)
-    assert type(test_obj.freqs) is np.ndarray
-
-
-def test_freq_from_array():
-    """Create frequency array from numpy array input."""
-    test_obj = UVGridder()
-    test_freq = np.array([100000000.0, 160000000.0])
-    test_obj.set_freqs(test_freq)
-    assert type(test_obj.freqs) is np.ndarray
+    test_obj.set_freqs(freq_in)
+    np.testing.assert_allclose(test_obj.freqs, expected_freq)
+    np.testing.assert_allclose(
+        test_obj.wavelength, const.c.to_value("m/s") / expected_freq
+    )
 
 
 def test_set_uvw_transpose():
@@ -183,7 +168,7 @@ def test_zero_uvbin():
     assert test_obj.uvbins == test_uvbin
 
 
-def test_uvbin_is_dict():
+def test_uvbin_creation():
     """Test uvbins get saved as dict."""
     test_obj = UVGridder()
     test_uvw = np.concatenate(
