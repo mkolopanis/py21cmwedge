@@ -4,11 +4,18 @@
 
 
 [project]
- dependencies    = [ "numpy>=2", "scipy>=1.16", "astropy>=7", "healpy>=1.18", "tqdm>=4.67.1" ]
- name            = "py21cmwedge"
- dynamic         = [ "version" ]
- authors         = [ { name = "Matthew Kolopanis" } ]
- description     = "A utility to predict the theoretical wedge leakage from a radio intereferometric array"
+ dependencies = [
+  "numpy>=2",
+  "scipy>=1.16",
+  "astropy>=7",
+  "healpy>=1.18",
+  "tqdm>=4.67.1",
+  "numba>=0.61.2",
+ ]
+ name = "py21cmwedge"
+ dynamic = [ "version" ]
+ authors = [ { name = "Matthew Kolopanis" } ]
+ description = "A utility to predict the theoretical wedge leakage from a radio intereferometric array"
  requires-python = ">=3.11"
  license = "BSD-2-clause"
 
