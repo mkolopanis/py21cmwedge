@@ -354,7 +354,7 @@ def test_grid_uv_deltas():
     test_obj.uvw_to_dict()
     test_obj.grid_uvw(convolve_beam=False, spatial_function="nearest")
 
-    np.testing.assert_allclose(test_obj.uvf_cube[0, 33, 18], 10)
+    np.testing.assert_allclose(test_obj.uvf_cube[0, 18, 33], 10)
 
 
 def test_grid_uv_deltas_multi_freq():
@@ -367,10 +367,10 @@ def test_grid_uv_deltas_multi_freq():
     test_obj.uvw_to_dict()
     test_obj.grid_uvw(convolve_beam=False, spatial_function="nearest")
 
-    np.testing.assert_allclose(test_obj.uvf_cube[1, 33, 18], 10)
-    np.testing.assert_allclose(test_obj.uvf_cube[0, 23, 18], 10)
-    np.testing.assert_allclose(test_obj.uvf_cube[1, 23, 18], 0)
-    np.testing.assert_allclose(test_obj.uvf_cube[0, 33, 18], 0)
+    np.testing.assert_allclose(test_obj.uvf_cube[1, 18, 33], 10)
+    np.testing.assert_allclose(test_obj.uvf_cube[0, 18, 23], 10)
+    np.testing.assert_allclose(test_obj.uvf_cube[1, 18, 23], 0)
+    np.testing.assert_allclose(test_obj.uvf_cube[0, 18, 33], 0)
 
 
 def test_grid_uv_error():
