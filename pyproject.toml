@@ -10,7 +10,7 @@
  authors         = [ { name = "Matthew Kolopanis" } ]
  description     = "A utility to predict the theoretical wedge leakage from a radio intereferometric array"
  requires-python = ">=3.11"
- license         = { text = "BSD" }
+ license = "BSD-2-clause"
 
 
  [project.optional-dependencies]
