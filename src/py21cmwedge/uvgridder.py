@@ -4,6 +4,7 @@ import healpy as hp
 import numpy as np
 from astropy import constants as const
 from scipy.signal import fftconvolve
+from tqdm import tqdm
 
 from . import dft
 
@@ -349,7 +350,7 @@ class UVGridder(object):
         self.uvf_cube = np.zeros(
             (self.freqs.size, self.uv_size, self.uv_size), dtype=complex
         )
-        for uv_key in self.uvbins.keys():
+        for uv_key in tqdm(self.uvbins.keys(), unit="Baseline"):
             self.__sum_uv__(uv_key, spatial_function=spatial_function)
 
         if convolve_beam:

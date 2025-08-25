@@ -4,7 +4,7 @@
 
 
 [project]
- dependencies    = [ "numpy>=2", "scipy>=1.16", "astropy>=7", "healpy>=1.18" ]
+ dependencies    = [ "numpy>=2", "scipy>=1.16", "astropy>=7", "healpy>=1.18", "tqdm>=4.67.1" ]
  name            = "py21cmwedge"
  dynamic         = [ "version" ]
  authors         = [ { name = "Matthew Kolopanis" } ]
