@@ -31,7 +31,6 @@ def norm(x, y, out, scale_factor):
         out /= out_norm
 
 
-# 2-d adaptation of https://stackoverflow.com/a/70614173
 @njit(numba.types.UniTuple(numba.float64[:, :], 2)(numba.float64[:], numba.float64[:]))
 def meshgrid(x, y):
     xx = np.empty(shape=(x.size, y.size), dtype=x.dtype)
@@ -41,6 +40,16 @@ def meshgrid(x, y):
             xx[j, k] = x[k]  # change to x[k] if indexing xy
             yy[j, k] = y[j]  # change to y[j] if indexing xy
     return xx, yy
+
+
+@njit(numba.int32(numba.float64, numba.float64[:]))
+def get_nearest(u, u_bins):
+    dists = u - u_bins
+    for cnt in range(dists.size):
+        if dists[cnt] < 0:
+            dists[cnt] = abs(dists[cnt])
+
+    return dists.argmin()
 
 
 class UVGridder(object):
@@ -392,8 +401,8 @@ class UVGridder(object):
               on self.wavelength_scale slope
         """
         for freq_cnt, (_u, _v) in enumerate(zip(u, v)):
-            u_index = np.abs(_u - x[:]).argmin()
-            v_index = np.abs(_v - x[:]).argmin()
+            u_index = get_nearest(_u, x)
+            v_index = get_nearest(_v, x)
 
             # v,u indexing because y is the outer dimension in memory
             uvf_cube[freq_cnt, v_index, u_index] += nbls
